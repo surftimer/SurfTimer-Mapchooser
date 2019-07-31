@@ -713,12 +713,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	PrintToChatAll("[SM] %t", "Nextmap Voting Started");
 }
 
-public void Handler_VoteFinishedGeneric(Menu menu,
-						   int num_votes,
-						   int num_clients,
-						   const int[][] client_info,
-						   int num_items,
-						   const int[][] item_info)
+public void Handler_VoteFinishedGeneric(Menu menu, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
 {
 	char map[PLATFORM_MAX_PATH];
 	char displayName[PLATFORM_MAX_PATH];
@@ -809,12 +804,7 @@ public void Handler_VoteFinishedGeneric(Menu menu,
 	}	
 }
 
-public void Handler_MapVoteFinished(Menu menu,
-						   int num_votes,
-						   int num_clients,
-						   const int[][] client_info,
-						   int num_items,
-						   const int[][] item_info)
+public void Handler_MapVoteFinished(Menu menu, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
 {
 	if (g_Cvar_RunOff.BoolValue && num_items > 1)
 	{
