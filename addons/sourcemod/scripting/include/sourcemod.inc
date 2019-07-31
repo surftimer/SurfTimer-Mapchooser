@@ -313,6 +313,16 @@ native void SetFailState(const char[] string, any ...);
 native void ThrowError(const char[] fmt, any ...);
 
 /**
+ * Logs a stack trace from the current function call. Code 
+ * execution continues after the call
+ *
+ * @param fmt		Format string to send with the stack trace.
+ * @param ...		Format arguments.
+ * @error			Always logs a stack trace.
+ */
+native void LogStackTrace(const char[] fmt, any ...);
+
+/**
  * Gets the system time as a unix timestamp.
  *
  * @param bigStamp		Optional array to store the 64bit timestamp in.
@@ -644,6 +654,37 @@ native int LoadFromAddress(Address addr, NumberType size);
  * @param size          How many bytes should be written.
  */
 native void StoreToAddress(Address addr, int data, NumberType size); 
+
+methodmap FrameIterator < Handle {
+	// Creates a stack frame iterator to build your own stack traces.
+	// @return New handle to a FrameIterator.
+	public native FrameIterator();
+		
+	// Advances the iterator to the next stack frame.
+	// @return True if another frame was fetched and data can be successfully read.
+	// @error No next element exception.
+	public native bool Next();
+	
+	// Resets the iterator back to it's starting position.
+	public native void Reset();
+	
+	// Returns the line number of the current function call.
+	property bool LineNumber {
+		public native get();
+	}
+	
+	// Gets the name of the current function in the call stack.
+	//
+	// @param buffer Buffer to copy to.
+	// @param maxlen Max size of the buffer.
+	public native void GetFunctionName(char[] buffer, int maxlen);
+	
+	// Gets the file path to the current call in the call stack.
+	//
+	// @param buffer Buffer to copy to.
+	// @param maxlen Max size of the buffer.
+	public native void GetFilePath(char[] buffer, int maxlen);
+}
 
 #include <helpers>
 #include <entity>
