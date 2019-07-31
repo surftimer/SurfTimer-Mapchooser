@@ -916,7 +916,6 @@ public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int par
 						item = GetRandomInt(0, count - 1);
 						menu.GetItem(item, map, sizeof(map));
 					}
-					
 					SetNextMap(map);
 					g_MapVoteCompleted = true;
 				}
@@ -1233,7 +1232,7 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 public void db_setupDatabase()
 {
 	char szError[255];
-	g_hDb = SQL_Connect("mapchooser", false, szError, 255);
+	g_hDb = SQL_Connect("surftimer", false, szError, 255);
 
 	if (g_hDb == null)
 		SetFailState("[Mapchooser] Unable to connect to database (%s)", szError);

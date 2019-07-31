@@ -51,18 +51,9 @@ ConVar g_Cvar_ExcludeCurrent;
 ConVar g_Cvar_ServerTier;
 
 Menu g_MapMenu = null;
-Menu g_MapMenuTier = null;
-Menu g_MapMenuTier1 = null;
-Menu g_MapMenuTier2 = null;
-Menu g_MapMenuTier3 = null;
-Menu g_MapMenuTier4 = null;
-Menu g_MapMenuTier5 = null;
-Menu g_MapMenuTier6 = null;
 
 ArrayList g_MapList = null;
 ArrayList g_MapListTier = null;
-
-int g_mapFileSerial = -1;
 
 #define MAPSTATUS_ENABLED (1<<0)
 #define MAPSTATUS_DISABLED (1<<1)
@@ -102,19 +93,6 @@ public void OnPluginStart()
 
 public void OnConfigsExecuted()
 {
-	// if (ReadMapList(g_MapList,
-	// 				g_mapFileSerial,
-	// 				"nominations",
-	// 				MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
-	// 	== null)
-	// {
-	// 	if (g_mapFileSerial == -1)
-	// 	{
-	// 		SetFailState("Unable to create a valid map list.");
-	// 	}
-	// }
-	
-	// BuildMapMenu();
 	SelectMapList();
 }
 
@@ -168,8 +146,10 @@ public Action Command_Addmap(int client, int args)
 		ReplyToCommand(client, "%t", "Map was not found", displayName);
 		return Plugin_Handled;		
 	}
-	
-	NominateResult result = NominateMap(resolvedMap, true, 0);
+
+	RemoveMapPath(resolvedMap, resolvedMap, sizeof(resolvedMap));
+
+	NominateResult result = NominateMap(resolvedMap, false, client);
 	
 	if (result > Nominate_Replaced)
 	{
@@ -258,7 +238,9 @@ public Action Command_Nominate(int client, int args)
 		
 		return Plugin_Handled;
 	}
-	
+
+	RemoveMapPath(mapname, mapname, sizeof(mapname));
+
 	NominateResult result = NominateMap(mapname, false, client);
 	
 	if (result > Nominate_Replaced)
@@ -294,7 +276,7 @@ void AttemptNominate(int client)
 	return;
 }
 
-void BuildMapMenu(int tier)
+void BuildMapMenu()
 {
 	delete g_MapMenu;
 
@@ -324,6 +306,8 @@ void BuildMapMenu(int tier)
 		int status = MAPSTATUS_ENABLED;
 		
 		g_MapList.GetString(i, map, sizeof(map));
+
+		Format(map, sizeof(map), "%s.", map);
 		
 		FindMap(map, map, sizeof(map));
 		
@@ -367,7 +351,9 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 			menu.GetItem(param2, map, sizeof(map), _, displayName, sizeof(displayName));
 			
 			GetClientName(param1, name, sizeof(name));
-	
+
+			RemoveMapPath(map, map, sizeof(map));
+
 			NominateResult result = NominateMap(map, false, param1);
 			
 			/* Don't need to check for InvalidMap because the menu did that already */
@@ -509,6 +495,67 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 			g_MapListTier.PushString(szValue);
 		}
 
-		BuildMapMenu(0);
+		BuildMapMenu();
 	}
+}
+
+public void RemoveMapPath(const char[] map, char[] destination, any maxlen)
+{
+	if (strlen(map) < 1)
+	{
+		ThrowError("Bad map name: %s", map);
+	}
+	
+	// UNIX paths
+	char pos = FindCharInString(map, '/', true);
+	if (pos == -1)
+	{
+		// Windows paths
+		pos = FindCharInString(map, '\\', true);
+		if (pos == -1)
+		{
+			//destination[0] = '\0';
+			strcopy(destination, maxlen, map);
+		}
+	}
+
+	// strlen is last + 1
+	int len = strlen(map) - 1 - pos;
+	
+	// pos + 1 is because pos is the last / or \ location and we want to start one char further
+	SubString(map, pos + 1, len, destination, maxlen);
+}
+
+public void SubString(const char[] source, any start, any len, char[] destination, any maxlen)
+{
+	if (maxlen < 1)
+	{
+		ThrowError("Destination size must be 1 or greater, but was %d", maxlen);
+	}
+	
+	// optimization
+	if (len == 0)
+	{
+		destination[0] = '\0';
+	}
+	
+	if (start < 0)
+	{
+		// strlen doesn't count the null terminator, so don't -1 on it.
+		start = strlen(source) + start;
+		if (start < 0)
+			start = 0;
+	}
+	
+	if (len < 0)
+	{
+		len = strlen(source) + len - start;
+		// If length is still less than 0, that'd be an error.
+	}
+	
+	// Check to make sure destination is large enough to hold the len, or truncate it.
+	// len + 1 because second arg to strcopy counts 1 for the null terminator
+	int realLength = len + 1 < maxlen ? len + 1 : maxlen;
+	
+	strcopy(destination, realLength, source[start]);
 }
