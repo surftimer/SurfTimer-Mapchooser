@@ -39,8 +39,8 @@
 
 public Plugin myinfo =
 {
-	name = "Map Nominations",
-	author = "AlliedModders LLC",
+	name = "SurfTimer Nominations",
+	author = "AlliedModders LLC & Ace",
 	description = "Provides Map Nominations",
 	version = SOURCEMOD_VERSION,
 	url = "http://www.sourcemod.net/"

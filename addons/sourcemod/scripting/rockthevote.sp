@@ -41,8 +41,8 @@
 
 public Plugin myinfo =
 {
-	name = "Rock The Vote",
-	author = "AlliedModders LLC",
+	name = "SurfTimer Rock The Vote",
+	author = "AlliedModders LLC & Ace",
 	description = "Provides RTV Map Voting",
 	version = SOURCEMOD_VERSION,
 	url = "http://www.sourcemod.net/"
@@ -221,7 +221,7 @@ void AttemptRTV(int client)
 	{
 		if (surftimer_GetPlayerPoints(client) < GetConVarInt(g_Cvar_PointsRequirement))
 		{
-			PrintToChat(client, "KP | You do not meet the point requirement, try our easy server! 139.99.144.42:27015");
+			PrintToChat(client, "[SM] %t", "Point Requirement");
 			return;
 		}
 	}
@@ -230,7 +230,7 @@ void AttemptRTV(int client)
 	{
 		if (surftimer_GetPlayerRank(client) > GetConVarInt(g_Cvar_RankRequirement))
 		{
-			PrintToChat(client, "KP | You do not meet the rank 500 requirement, try our easy server! 139.99.144.42:27015");
+			PrintToChat(client, "[SM] %t", "Rank Requirement", GetConVarInt(g_Cvar_RankRequirement));
 			return;
 		}
 	}

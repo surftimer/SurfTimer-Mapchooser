@@ -42,8 +42,8 @@
 
 public Plugin myinfo =
 {
-	name = "MapChooser",
-	author = "AlliedModders LLC",
+	name = "SurfTimer MapChooser",
+	author = "AlliedModders LLC & Ace",
 	description = "Automated Map Voting",
 	version = SOURCEMOD_VERSION,
 	url = "http://www.sourcemod.net/"

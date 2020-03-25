@@ -72,4 +72,15 @@
 		"#format"		"{1:s}"
 		"en"			"Changing map to {1}! Rock the Vote has spoken!"
 	}
+
+	"Rank Requirement"
+	{
+		"#format"		"{1:i}"
+		"en"			"You do not meet the rank {1} requirement!"
+	}
+
+	"Point Requirement"
+	{
+		"en"			"You do not meet the point requirement!"
+	}
 }
