@@ -952,6 +952,7 @@ public Action Timer_ChangeMap(Handle hTimer, DataPack dp)
 		dp.ReadString(map, sizeof(map));		
 	}
 	
+	Format(map, sizeof(map), "%s.", map);
 	ForceChangeLevel(map, "Map Vote");
 	
 	return Plugin_Stop;
