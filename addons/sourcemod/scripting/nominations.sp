@@ -81,8 +81,6 @@ public void OnPluginStart()
 	g_Cvar_ExcludeOld = CreateConVar("sm_nominate_excludeold", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.00, true, 1.0);
 	g_Cvar_ExcludeCurrent = CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.00, true, 1.0);
 
-	// KP Surf ConVars
-	g_Cvar_ServerTier = CreateConVar("sm_server_tier", "1.0", "Specifies the servers tier to only include maps from, for example if you want a tier 1-3 server make it 1.3, a tier 2 only server would be 2.0, etc", 0, true, 1.0, true, 8.0);
 	
 	RegConsoleCmd("sm_nominate", Command_Nominate);
 	
@@ -460,7 +458,8 @@ public void db_setupDatabase()
 public void SelectMapList()
 {
 	char szQuery[256], szTier[16], szBuffer[2][32];
-
+	
+	g_Cvar_ServerTier = FindConVar("sm_server_tier");
 	GetConVarString(g_Cvar_ServerTier, szTier, sizeof(szTier));
 	ExplodeString(szTier, ".", szBuffer, 2, 32);
 
