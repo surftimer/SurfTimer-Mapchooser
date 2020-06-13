@@ -1,5 +1,4 @@
-/**
- * vim: set ts=4 :
+/*
  * =============================================================================
  * SourceMod Rock The Vote Plugin
  * Creates a map vote when the required number of players have requested one.
@@ -42,9 +41,9 @@
 public Plugin myinfo =
 {
 	name = "SurfTimer Rock The Vote",
-	author = "AlliedModders LLC & Ace",
+	author = "AlliedModders LLC & SurfTimer Contributors",
 	description = "Provides RTV Map Voting",
-	version = SOURCEMOD_VERSION,
+	version = "1.2",
 	url = "http://www.sourcemod.net/"
 };
 

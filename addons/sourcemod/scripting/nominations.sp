@@ -1,5 +1,4 @@
-/**
- * vim: set ts=4 :
+/*
  * =============================================================================
  * SourceMod Rock The Vote Plugin
  * Creates a map vote when the required number of players have requested one.
@@ -40,9 +39,9 @@
 public Plugin myinfo =
 {
 	name = "SurfTimer Nominations",
-	author = "AlliedModders LLC & Ace",
+	author = "AlliedModders LLC & SurfTimer Contributors",
 	description = "Provides Map Nominations",
-	version = SOURCEMOD_VERSION,
+	version = "1.2",
 	url = "http://www.sourcemod.net/"
 };
 
@@ -66,6 +65,11 @@ StringMap g_mapTrie = null;
 // SQL Connection
 Handle g_hDb = null;
 #define PERCENT 0x25
+
+//SQL Queries
+char sql_SelectMapListSpecific[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier = %s GROUP BY ck_zones.mapname ORDER BY tier ASC, mapname ASC";
+char sql_SelectMapListRange[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier >= %s AND tier <= %s GROUP BY ck_zones.mapname ORDER BY tier ASC, mapname ASC";
+char sql_SelectMapList[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) GROUP BY ck_zones.mapname ORDER BY tier ASC, mapname ASC";
 
 public void OnPluginStart()
 {
@@ -457,23 +461,26 @@ public void db_setupDatabase()
 
 public void SelectMapList()
 {
-	char szQuery[256], szTier[16], szBuffer[2][32];
+	char szQuery[512], szTier[16], szBuffer[2][32];
 	
 	g_Cvar_ServerTier = FindConVar("sm_server_tier");
 	GetConVarString(g_Cvar_ServerTier, szTier, sizeof(szTier));
 	ExplodeString(szTier, ".", szBuffer, 2, 32);
 
 	if (StrEqual(szBuffer[1], "0"))
-		Format(szQuery, sizeof(szQuery), "SELECT mapname, tier FROM ck_maptier WHERE tier = %s ORDER BY tier asc, mapname asc;", szBuffer[0]);
+		// OLD QUERY Format(szQuery, sizeof(szQuery), "SELECT mapname, tier FROM ck_maptier WHERE tier = %s ORDER BY tier asc, mapname asc;", szBuffer[0]);
+		Format(szQuery, sizeof(szQuery), sql_SelectMapListSpecific, szBuffer[0]);
 	else if (strlen(szBuffer[1]) > 0)
-		Format(szQuery, sizeof(szQuery), "SELECT mapname, tier FROM ck_maptier WHERE tier >= %s AND tier <= %s ORDER BY tier asc, mapname asc;", szBuffer[0], szBuffer[1]);
+		// OLD QUERY Format(szQuery, sizeof(szQuery), "SELECT mapname, tier FROM ck_maptier WHERE tier >= %s AND tier <= %s ORDER BY tier asc, mapname asc;", szBuffer[0], szBuffer[1]);
+		Format(szQuery, sizeof(szQuery), sql_SelectMapListRange, szBuffer[0], szBuffer[1]);
 	else
-		Format(szQuery, sizeof(szQuery), "SELECT mapname, tier FROM ck_maptier ORDER BY tier asc, mapname asc;");
+		// OLD QUERY Format(szQuery, sizeof(szQuery), "SELECT mapname, tier FROM ck_maptier ORDER BY tier asc, mapname asc;");
+		Format(szQuery, sizeof(szQuery), sql_SelectMapList);
 
 	SQL_TQuery(g_hDb, SelectMapListCallback, szQuery, DBPrio_Low);
 }
 
-public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error, any tier)
+public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error, any data)
 {
 	if (hndl == null)
 	{
@@ -486,12 +493,30 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 		g_MapList.Clear();
 		g_MapListTier.Clear();
 
-		char szValue[256], szMapName[128];
+		int tier, zones, bonus;
+		char szValue[256], szMapName[128], stages[128], bonuses[128];
 		while (SQL_FetchRow(hndl))
 		{
 			SQL_FetchString(hndl, 0, szMapName, sizeof(szMapName));
 			tier = SQL_FetchInt(hndl, 1);
-			Format(szValue, sizeof(szValue), "%s - Tier %d", szMapName, tier);
+			zones = SQL_FetchInt(hndl, 2);
+			bonus = SQL_FetchInt(hndl, 3);
+
+			if (zones == 1)
+			{
+				Format(stages, sizeof(stages), "- Linear");
+			}
+			else
+				Format(stages, sizeof(stages), "- Stages %d", zones);
+
+			if (bonus == 0)
+			{
+				Format(bonuses, sizeof(bonuses), "");
+			}
+			else
+				Format(bonuses, sizeof(bonuses), "- Bonuses %d", bonus);
+			
+			Format(szValue, sizeof(szValue), "%s - Tier %d %s %s", szMapName, tier, stages, bonuses);
 			g_MapList.PushString(szMapName);
 			g_MapListTier.PushString(szValue);
 		}
