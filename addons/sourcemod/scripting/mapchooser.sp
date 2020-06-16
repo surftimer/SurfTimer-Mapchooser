@@ -853,14 +853,15 @@ public void Handler_MapVoteFinished(Menu menu, int num_votes, int num_clients, c
 
 	char map2[PLATFORM_MAX_PATH];
 	char displayName[PLATFORM_MAX_PATH];
-	// menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], map, sizeof(map), _, displayName, sizeof(displayName));
-	menu.GetItem(item_info[1][VOTEINFO_ITEM_INDEX], map2, sizeof(map2), _, displayName, sizeof(displayName));
+	menu.GetItem(item_info[0][VOTEINFO_ITEM_INDEX], map2, sizeof(map2), _, displayName, sizeof(displayName));
+	// menu.GetItem(item_info[1][VOTEINFO_ITEM_INDEX], map2, sizeof(map2), _, displayName, sizeof(displayName));
 
-	if (StrEqual(map2, VOTE_DONTCHANGE) || StrEqual(map2, VOTE_EXTEND))
-		item_info[0][VOTEINFO_ITEM_INDEX] = item_info[1][VOTEINFO_ITEM_INDEX];
+	//if (StrEqual(map2, VOTE_DONTCHANGE) || StrEqual(map2, VOTE_EXTEND))
+	//	item_info[0][VOTEINFO_ITEM_INDEX] = item_info[1][VOTEINFO_ITEM_INDEX];
 
 	Handler_VoteFinishedGeneric(menu, num_votes, num_clients, client_info, num_items, item_info);
 }
+
 
 public int Handler_MapVoteMenu(Menu menu, MenuAction action, int param1, int param2)
 {
@@ -1351,7 +1352,7 @@ public bool DisplayVoteToPros(int time, int flags, Menu menu)
 
 		if (g_Cvar_RankRequirement != null && GetConVarInt(g_Cvar_RankRequirement) > 0)
 		{
-			if (surftimer_GetPlayerRank(i) > GetConVarInt(g_Cvar_RankRequirement))
+			if (surftimer_GetPlayerRank(i) > GetConVarInt(g_Cvar_RankRequirement) || surftimer_GetPlayerRank(i) == 0)
 			{
 				continue;
 			}
