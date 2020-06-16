@@ -12,7 +12,7 @@ This is a edit of the default SourceMod mapchooser and nomination plugin, it pro
 
 ## Installation
 
-* Get latest plugin files from [Realase Page](https://github.com/qawery-just-sad/surftimer-mapchooser/releases)
+* Get latest plugin files from [Release Page](https://github.com/qawery-just-sad/surftimer-mapchooser/releases)
 * Copy files over to `csgo/addons/sourcemod`
 * Make sure that `csgo/addons/sourcemod/configs/databases.cfg` points to the surftimer database (You have to use the same database as the SurfTimer)
 ```
