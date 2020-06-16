@@ -1351,7 +1351,7 @@ public bool DisplayVoteToPros(int time, int flags, Menu menu)
 
 		if (g_Cvar_RankRequirement != null && GetConVarInt(g_Cvar_RankRequirement) > 0)
 		{
-			if (surftimer_GetPlayerRank(i) > GetConVarInt(g_Cvar_RankRequirement))
+			if (surftimer_GetPlayerRank(i) > GetConVarInt(g_Cvar_RankRequirement) || surftimer_GetPlayerRank(i) == 0)
 			{
 				continue;
 			}

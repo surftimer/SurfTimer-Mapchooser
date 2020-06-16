@@ -227,7 +227,7 @@ void AttemptRTV(int client)
 
 	if (GetConVarInt(g_Cvar_RankRequirement) > 0)
 	{
-		if (surftimer_GetPlayerRank(client) > GetConVarInt(g_Cvar_RankRequirement))
+		if (surftimer_GetPlayerRank(client) > GetConVarInt(g_Cvar_RankRequirement) || surftimer_GetPlayerRank(client) == 0)
 		{
 			PrintToChat(client, "[SM] %t", "Rank Requirement", GetConVarInt(g_Cvar_RankRequirement));
 			return;
