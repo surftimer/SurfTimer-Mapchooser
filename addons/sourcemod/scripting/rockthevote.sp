@@ -43,8 +43,8 @@ public Plugin myinfo =
 	name = "SurfTimer Rock The Vote",
 	author = "AlliedModders LLC & SurfTimer Contributors",
 	description = "Provides RTV Map Voting",
-	version = "1.2",
-	url = "http://www.sourcemod.net/"
+	version = "1.3",
+	url = "https://github.com/qawery-just-sad/surftimer-mapchooser"
 };
 
 ConVar g_Cvar_Needed;
@@ -63,18 +63,13 @@ int g_VotesNeeded = 0;			// Necessary votes before map vote begins. (voters * pe
 bool g_Voted[MAXPLAYERS+1] = {false, ...};
 
 bool g_InChange = false;
-bool g_bCanVote[MAXPLAYERS + 1];
 
-// SQL Connection
-Handle g_hDb = null;
-#define PERCENT 0x25
 
 public void OnPluginStart()
 {
 	LoadTranslations("common.phrases");
 	LoadTranslations("rockthevote.phrases");
 
-	db_setupDatabase();
 	
 	g_Cvar_Needed = CreateConVar("sm_rtv_needed", "0.60", "Percentage of players needed to rockthevote (Def 60%)", 0, true, 0.05, true, 1.0);
 	g_Cvar_MinPlayers = CreateConVar("sm_rtv_minplayers", "0", "Number of players required before RTV will be enabled.", 0, true, 0.0, true, float(MAXPLAYERS));
@@ -119,15 +114,6 @@ public void OnClientPostAdminCheck(int client)
 {
 	if (!IsFakeClient(client))
 	{
-		g_bCanVote[client] = false;
-
-		if (GetConVarInt(g_Cvar_PointsRequirement) > 0 || GetConVarInt(g_Cvar_RankRequirement) > 0)
-		{
-			db_selectPlayerData(client);
-			return;
-		}
-
-		g_bCanVote[client] = true;
 		g_Voters++;
 		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
 	}
@@ -141,7 +127,7 @@ public void OnClientDisconnect(int client)
 		g_Voted[client] = false;
 	}
 	
-	if (!IsFakeClient(client) && g_bCanVote[client])
+	if (!IsFakeClient(client))
 	{
 		g_Voters--;
 		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
@@ -321,71 +307,4 @@ stock bool IsValidClient(int client)
 	if (client >= 1 && client <= MaxClients && IsValidEntity(client) && IsClientConnected(client) && IsClientInGame(client))
 		return true;
 	return false;
-}
-
-public void db_setupDatabase()
-{
-	char szError[255];
-	g_hDb = SQL_Connect("surftimer", false, szError, 255);
-
-	if (g_hDb == null)
-		SetFailState("[Nominations] Unable to connect to database (%s)", szError);
-	
-	return;
-}
-
-public void db_selectPlayerData(int client)
-{
-	if (!IsValidClient(client) || IsFakeClient(client))
-		return;
-
-	char szSteamID[32], szQuery[256];
-	GetClientAuthId(client, AuthId_Steam2, szSteamID, sizeof(szSteamID), true);
-
-	Format(szQuery, sizeof(szQuery), "SELECT name, points FROM ck_playerrank WHERE style = 0 AND points >= (SELECT points FROM ck_playerrank WHERE steamid = '%s' AND style = 0) ORDER BY points;", szSteamID);
-	SQL_TQuery(g_hDb, db_selectPlayersDataCallback, szQuery, client, DBPrio_Low);
-}
-
-public void db_selectPlayersDataCallback(Handle owner, Handle hndl, const char[] error, any client)
-{
-	if (hndl == null)
-	{
-		LogError("[RockTheVote] SQL Error (db_selectPlayersDataCallback): %s", error);
-		return;
-	}
-
-	int rank, points;
-	if (SQL_HasResultSet(hndl) && SQL_FetchRow(hndl))
-	{
-		rank = SQL_GetRowCount(hndl);
-		points = SQL_FetchInt(hndl, 0);
-	}
-	else
-		rank = 99999;
-	
-	bool bNewVoter = true;
-	if (GetConVarInt(g_Cvar_PointsRequirement) > 0)
-	{
-		if (points < GetConVarInt(g_Cvar_PointsRequirement))
-		{
-			bNewVoter = false;
-			g_bCanVote[client] = false;
-		}
-	}
-
-	if (GetConVarInt(g_Cvar_RankRequirement) > 0)
-	{
-		if (rank > GetConVarInt(g_Cvar_RankRequirement))
-		{
-			bNewVoter = false;
-			g_bCanVote[client] = false;
-		}
-	}
-
-	if (bNewVoter)
-	{
-		g_bCanVote[client] = true;
-		g_Voters++;
-		g_VotesNeeded = RoundToCeil(float(g_Voters) * g_Cvar_Needed.FloatValue);
-	}
 }
