@@ -13,7 +13,7 @@ This is a edit of the default SourceMod mapchooser and nomination plugin, it pro
 ## Installation
 
 * Get latest plugin files from [Release Page](https://github.com/qawery-just-sad/surftimer-mapchooser/releases)
-* Copy files over to `csgo/addons/sourcemod`
+* Copy files over to `csgo/addons/sourcemod/plugins`
 * Make sure that `csgo/addons/sourcemod/configs/databases.cfg` points to the surftimer database (You have to use the same database as the SurfTimer)
 ```
 "surftimer"
@@ -26,4 +26,6 @@ This is a edit of the default SourceMod mapchooser and nomination plugin, it pro
 		"port"              "3306"              // The port to the database server
 	}
 ```
-* Set `sm_server_tier` in `csgo/cfg/mapchooser.cfg` to the tier of maps you want appearing the nominate list. Example, for a tier 1-3 server, set it to `sm_server_tier 1.3`, a tier 1 only server would be `sm_server_tier 1.0`
+* Set `sm_server_tier` in `csgo/cfg/sourcemod/mapchooser.cfg` to the tier of maps you want appearing the nominate list. Example, for a tier 1-3 server, set it to `sm_server_tier 1.3`, a tier 1 only server would be `sm_server_tier 1.0`
+
+<br><sup>This plugin is broken, trust me, it only works on my server:smile:</sup>
