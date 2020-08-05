@@ -39,4 +39,5 @@ jobs:
         spcomp -w234 -O2 -v2 -i $INCLUDE_PATH nominations.sp
         spcomp -w234 -O2 -v2 -i $INCLUDE_PATH rockthevote.sp
         spcomp -w234 -O2 -v2 -i $INCLUDE_PATH voteextend.sp
+      working-directory: ${{ env.SCRIPTS_PATH }}/
         
