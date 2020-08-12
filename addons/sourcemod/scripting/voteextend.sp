@@ -7,6 +7,7 @@
 
 #include <sourcemod>
 #include <SurfTimer>
+#include <autoexecconfig>
 
 #pragma newdecls required
 #pragma semicolon 1
@@ -37,15 +38,20 @@ public void OnPluginStart()
 	RegConsoleCmd("sm_ve", Command_VoteExtend, "SurfTimer | Vote to extend the map");
 	RegConsoleCmd("sm_voteextend", Command_VoteExtend, "SurfTimer | Vote to extend the map");
 	RegConsoleCmd("sm_extend", Command_VoteExtend, "SurfTimer | Vote to extend the map");
-	
-	g_hMaxVoteExtends = CreateConVar("ck_max_vote_extends", "2", "The max number of VIP vote extends", FCVAR_NOTIFY, true, 0.0);
-	g_hVoteExtendTime = CreateConVar("ck_vote_extend_time", "10.0", "The time in minutes that is added to the remaining map time if a vote extend is successful.", FCVAR_NOTIFY, true, 0.0);
-	g_fInitialVoteDelay = CreateConVar("ck_ve_initialdelay", "300", "The time in seconds when first vote can take place", FCVAR_NOTIFY, true, 0.0);
-	g_fInterval = CreateConVar("ck_ve_interval", "240.0", "Time in seconds after a failed VE before another can be held", 0, true, 0.00);
-	g_bOneVotePerPlayer = CreateConVar("ck_ve_onevote", "0", "Can vote be started again from the same person. 0 - Yes, 1 - No.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
-	g_VipFeature = CreateConVar("ck_ve_vip", "1", "Is command only for vips? 1-Yes, 0-No.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
 
-	AutoExecConfig(true, "vote-extend");
+	AutoExecConfig_SetCreateDirectory(true);
+	AutoExecConfig_SetCreateFile(true);
+	AutoExecConfig_SetFile("vote-extend");
+	
+	g_hMaxVoteExtends = AutoExecConfig_CreateConVar("ck_max_vote_extends", "2", "The max number of VIP vote extends", FCVAR_NOTIFY, true, 0.0);
+	g_hVoteExtendTime = AutoExecConfig_CreateConVar("ck_vote_extend_time", "10.0", "The time in minutes that is added to the remaining map time if a vote extend is successful.", FCVAR_NOTIFY, true, 0.0);
+	g_fInitialVoteDelay = AutoExecConfig_CreateConVar("ck_ve_initialdelay", "300", "The time in seconds when first vote can take place", FCVAR_NOTIFY, true, 0.0);
+	g_fInterval = AutoExecConfig_CreateConVar("ck_ve_interval", "240.0", "Time in seconds after a failed VE before another can be held", 0, true, 0.00);
+	g_bOneVotePerPlayer = AutoExecConfig_CreateConVar("ck_ve_onevote", "0", "Can vote be started again from the same person. 0 - Yes, 1 - No.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+	g_VipFeature = AutoExecConfig_CreateConVar("ck_ve_vip", "1", "Is command only for vips? 1-Yes, 0-No.", FCVAR_NOTIFY, true, 0.0, true, 1.0);
+
+	AutoExecConfig_ExecuteFile();
+	AutoExecConfig_CleanFile();
 }
 
 public void OnMapEnd()
