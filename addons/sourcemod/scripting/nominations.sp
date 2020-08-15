@@ -536,8 +536,14 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 				Format(bonuses, sizeof(bonuses), "- Bonuses %d", bonus);
 			
 			Format(szValue, sizeof(szValue), "%s - Tier %d %s %s", szMapName, tier, stages, bonuses);
-			g_MapList.PushString(szMapName);
-			g_MapListTier.PushString(szValue);
+
+			if (IsMapValid(szMapName))
+			{
+				g_MapList.PushString(szMapName);
+				g_MapListTier.PushString(szValue);
+			}
+			else
+				LogError("Error 404: Map %s was found in database but not on server! Please delete entry in database or add the map to server!", szMapName);
 		}
 
 		BuildMapMenu();
