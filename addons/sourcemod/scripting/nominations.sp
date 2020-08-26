@@ -43,7 +43,7 @@ public Plugin myinfo =
 	name = "SurfTimer Nominations",
 	author = "AlliedModders LLC & SurfTimer Contributors",
 	description = "Provides Map Nominations",
-	version = "1.3",
+	version = "1.6",
 	url = "https://github.com/qawery-just-sad/surftimer-mapchooser"
 };
 
