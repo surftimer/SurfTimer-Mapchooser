@@ -37,6 +37,7 @@
 #include <nextmap>
 #include <SurfTimer>
 #include <autoexecconfig>
+#include <colorlib>
 
 #pragma newdecls required
 
@@ -74,6 +75,10 @@ ConVar g_Cvar_RunOffPercent;
 ConVar g_Cvar_ServerTier;
 ConVar g_Cvar_PointsRequirement;
 ConVar g_Cvar_RankRequirement;
+
+// Chat prefix
+char g_szChatPrefix[256];
+ConVar g_ChatPrefix = null;
 
 Handle g_VoteTimer = null;
 Handle g_RetryTimer = null;
@@ -122,7 +127,6 @@ int g_winCount[MAXTEAMS];
 public void OnPluginStart()
 {
 	LoadTranslations("mapchooser.phrases");
-	LoadTranslations("common.phrases");
 
 	db_setupDatabase();
 	
@@ -156,6 +160,9 @@ public void OnPluginStart()
 	
 	// KP Surf ConVars
 	g_Cvar_ServerTier = AutoExecConfig_CreateConVar("sm_server_tier", "0", "Specifies the tier range for maps, for example if you want a tier 1-3 server make it 1.3, a tier 2 only server would be 2.0, etc", 0, true, 0.0, true, 8.0);
+
+	AutoExecConfig_ExecuteFile();
+	AutoExecConfig_CleanFile();
 	
 	RegAdminCmd("sm_mapvote", Command_Mapvote, ADMFLAG_CHANGEMAP, "sm_mapvote - Forces MapChooser to attempt to run a map vote now.");
 	RegAdminCmd("sm_setnextmap", Command_SetNextmap, ADMFLAG_CHANGEMAP, "sm_setnextmap <map>");
@@ -165,8 +172,6 @@ public void OnPluginStart()
 	g_Cvar_Fraglimit = FindConVar("mp_fraglimit");
 	g_Cvar_Bonusroundtime = FindConVar("mp_bonusroundtime");
 
-	
-	
 	if (g_Cvar_Winlimit || g_Cvar_Maxrounds)
 	{
 		char folder[64];
@@ -197,8 +202,6 @@ public void OnPluginStart()
 		HookEvent("player_death", Event_PlayerDeath);		
 	}
 	
-	AutoExecConfig_ExecuteFile();
-	AutoExecConfig_CleanFile();
 	
 	//Change the mp_bonusroundtime max so that we have time to display the vote
 	//If you display a vote during bonus time good defaults are 17 vote duration and 19 mp_bonustime
@@ -242,6 +245,9 @@ public void OnConfigsExecuted()
 	// 		LogError("Unable to create a valid map list.");
 	// 	}
 	// }
+
+	g_ChatPrefix = FindConVar("ck_chat_prefix");
+	GetConVarString(g_ChatPrefix, g_szChatPrefix, sizeof(g_szChatPrefix));
 
 	SelectMapList();
 	
@@ -317,7 +323,7 @@ public Action Command_SetNextmap(int client, int args)
 {
 	if (args < 1)
 	{
-		ReplyToCommand(client, "[SM] Usage: sm_setnextmap <map>");
+		CReplyToCommand(client, "%t", "Usage_setnm", g_szChatPrefix);
 		return Plugin_Handled;
 	}
 
@@ -327,13 +333,13 @@ public Action Command_SetNextmap(int client, int args)
 
 	if (FindMap(map, displayName, sizeof(displayName)) == FindMap_NotFound)
 	{
-		ReplyToCommand(client, "[SM] %t", "Map was not found", map);
+		CReplyToCommand(client, "%t", "Map was not found", g_szChatPrefix, map);
 		return Plugin_Handled;
 	}
 
 	GetMapDisplayName(displayName, displayName, sizeof(displayName));
 
-	ShowActivity2(client, "[SM] ", "%t", "Changed Next Map", displayName);
+	CShowActivity2(client, g_szChatPrefix, "%t", "Changed Next Map", displayName);
 	LogAction(client, -1, "\"%L\" changed nextmap to \"%s\"", client, map);
 
 	SetNextMap(map);
@@ -722,7 +728,7 @@ void InitiateVote(MapChange when, ArrayList inputlist=null)
 	DisplayVoteToPros(voteDuration, 0, g_VoteMenu);
 
 	LogAction(-1, -1, "Voting for next map has started.");
-	PrintToChatAll("[SM] %t", "Nextmap Voting Started");
+	CPrintToChatAll("%t", "Nextmap Voting Started", g_szChatPrefix);
 }
 
 public void Handler_VoteFinishedGeneric(Menu menu, int num_votes, int num_clients, const int[][] client_info, int num_items, const int[][] item_info)
@@ -771,7 +777,7 @@ public void Handler_VoteFinishedGeneric(Menu menu, int num_votes, int num_client
 			}
 		}
 
-		PrintToChatAll("[SM] %t", "Current Map Extended", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll("%t", "Current Map Extended", g_szChatPrefix, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. The current map has been extended.");
 		
 		// We extended, so we'll have to vote again.
@@ -782,7 +788,7 @@ public void Handler_VoteFinishedGeneric(Menu menu, int num_votes, int num_client
 	}
 	else if (strcmp(map, VOTE_DONTCHANGE, false) == 0)
 	{
-		PrintToChatAll("[SM] %t", "Current Map Stays", RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll("%t", "Current Map Stays", g_szChatPrefix, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. 'No Change' was the winner");
 		
 		g_HasVoteStarted = false;
@@ -811,7 +817,7 @@ public void Handler_VoteFinishedGeneric(Menu menu, int num_votes, int num_client
 		g_HasVoteStarted = false;
 		g_MapVoteCompleted = true;
 		
-		PrintToChatAll("[SM] %t", "Nextmap Voting Finished", displayName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
+		CPrintToChatAll("%t", "Nextmap Voting Finished", g_szChatPrefix, displayName, RoundToFloor(float(item_info[0][VOTEINFO_ITEM_VOTES])/float(num_votes)*100), num_votes);
 		LogAction(-1, -1, "Voting for next map has finished. Nextmap: %s.", map);
 	}	
 }
@@ -848,7 +854,7 @@ public void Handler_MapVoteFinished(Menu menu, int num_votes, int num_clients, c
 			float map2percent = float(item_info[1][VOTEINFO_ITEM_VOTES])/ float(num_votes) * 100;
 			
 			
-			PrintToChatAll("[SM] %t", "Starting Runoff", g_Cvar_RunOffPercent.FloatValue, info1, map1percent, info2, map2percent);
+			CPrintToChatAll("%t", "Starting Runoff", g_szChatPrefix, g_Cvar_RunOffPercent.FloatValue, info1, map1percent, info2, map2percent);
 			LogMessage("Voting for next map was indecisive, beginning runoff vote");
 					
 			return;

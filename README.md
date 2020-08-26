@@ -16,6 +16,7 @@ This is a edit of the default SourceMod mapchooser and nomination plugin, it pro
 * [Sourcemod](https://www.sourcemod.net/downloads.php?branch=stable)
 * [Surftimer](https://github.com/surftimer/Surftimer-olokos/tree/master/addons/sourcemod/scripting/include)
 * [AutoExecConfig](https://github.com/Impact123/AutoExecConfig)
+* [ColorLib](https://github.com/c0rp3n/colorlib-sm)
 
 ## Installation
 

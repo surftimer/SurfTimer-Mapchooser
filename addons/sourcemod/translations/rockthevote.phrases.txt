@@ -1,86 +1,50 @@
 "Phrases"
 {
-	"Rock The Vote"
-	{
-		"en"			"Rock The Vote:"
-	}
-	
 	"RTV Not Allowed"
 	{
-		"en"			"Rock the Vote is not allowed yet."
+		"#format"		"{1:s}"
+		"en"			"{1} {red}Rock the Vote is not allowed yet."
 	}
 	
 	"RTV Started"
 	{
-		"en"			"Rock the Vote has already started."
-	}
-
-	"RTV Ended"
-	{
-		"en"			"RTV has already ended, you cannot start it again or nominate maps."
-
+		"#format"		"{1:s}"
+		"en"			"{1} {yellow}Rock the Vote has already started."
 	}
 	
 	"Already Voted"
 	{
- 		"#format"		"{1:d},{2:d}"
-	 	"en"			"You have already voted to Rock the Vote. ({1} votes, {2} required)"
+ 		"#format"		"{1:s},{2:d},{3:d}"
+	 	"en"			"{1} {yellow}You have already voted to Rock the Vote. ({2} votes, {3} required)"
 	}
 	
 	"Minimal Players Not Met"
 	{
-		"en"			"The minimal number of players required has not been met."
+		"#format"		"{1:s}"
+		"en"			"{1} {yellow}The minimal number of players required has not been met."
 	}
-	
 	
 	"RTV Requested"
 	{
-		"#format"		"{1:s},{2:d},{3:d}"
-		"en"			"{1} wants to rock the vote. ({2} votes, {3} required)"
+		"#format"		"{1:s},{2:s},{3:d},{4:d}"
+		"en"			"{1} {2} wants to rock the vote. ({3} votes, {4} required)"
 	}
-	
-	"RTV Vote Ready"
-	{
-		"en"			"Rocking the Vote!"
 
-	}
-	
-	"Don't Change"
-	{
-		"en"			"Keep Current Map"
-	}
-	
-	
-	"Selected Map"
-	{
-		"#format"		"{1:s},{2:s}"
-		"en"			"{1} has selected {2}"
-	}
-	
-	"No Votes"
-	{
-		"en"			"No votes received for Rock the Vote, keeping current map."
-	}
-	
-	"Current Map Stays"
-	{
-		"en"			"Current map continues! Rock the Vote has spoken!"
-	}
-	
 	"Changing Maps"
 	{
-		"#format"		"{1:s}"
-		"en"			"Changing map to {1}! Rock the Vote has spoken!"
+		"#format"		"{1:s},{2:s}"
+		"en"			"{1} Changing map to {yellow}{2}{default}! Rock the Vote has spoken!"
 	}
 
 	"Rank Requirement"
 	{
-		"#format"		"{1:i}"
-		"en"			"You do not meet the rank {1} requirement!"
+		"#format"		"{1:s},{2:i}"
+		"en"			"{1} {red}You do not meet the rank {2} requirement!"
 	}
 
 	"Point Requirement"
 	{
-		"en"			"You do not meet the point requirement!"
+		"#format"		"{1:s}"
+		"en"			"{1} {red}You do not meet the point requirement!"
 	}
 }

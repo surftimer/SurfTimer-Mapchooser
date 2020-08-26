@@ -35,6 +35,7 @@
 #include <nextmap>
 #include <SurfTimer>
 #include <autoexecconfig>
+#include <colorlib>
 
 #pragma semicolon 1
 #pragma newdecls required
@@ -57,6 +58,10 @@ ConVar g_Cvar_RTVPostVoteAction;
 ConVar g_Cvar_PointsRequirement;
 ConVar g_Cvar_RankRequirement;
 
+// Chat prefix
+char g_szChatPrefix[256];
+ConVar g_ChatPrefix = null;
+
 bool g_RTVAllowed = false;	// True if RTV is available to players. Used to delay rtv votes.
 int g_Voters = 0;				// Total voters connected. Doesn't include fake clients.
 int g_Votes = 0;				// Total number of "say rtv" votes
@@ -68,7 +73,6 @@ bool g_InChange = false;
 
 public void OnPluginStart()
 {
-	LoadTranslations("common.phrases");
 	LoadTranslations("rockthevote.phrases");
 
 	AutoExecConfig_SetCreateDirectory(true);
@@ -112,6 +116,9 @@ public void OnMapEnd()
 
 public void OnConfigsExecuted()
 {
+	g_ChatPrefix = FindConVar("ck_chat_prefix");
+	GetConVarString(g_ChatPrefix, g_szChatPrefix, sizeof(g_szChatPrefix));
+	
 	CreateTimer(g_Cvar_InitialDelay.FloatValue, Timer_DelayRTV, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
@@ -185,25 +192,25 @@ void AttemptRTV(int client)
 {
 	if (!g_RTVAllowed || (g_Cvar_RTVPostVoteAction.IntValue == 1 && HasEndOfMapVoteFinished()))
 	{
-		ReplyToCommand(client, "[SM] %t", "RTV Not Allowed");
+		CReplyToCommand(client, "%t", "RTV Not Allowed", g_szChatPrefix);
 		return;
 	}
 		
 	if (!CanMapChooserStartVote())
 	{
-		ReplyToCommand(client, "[SM] %t", "RTV Started");
+		CReplyToCommand(client, "%t", "RTV Started", g_szChatPrefix);
 		return;
 	}
 	
 	if (GetClientCount(true) < g_Cvar_MinPlayers.IntValue)
 	{
-		ReplyToCommand(client, "[SM] %t", "Minimal Players Not Met");
+		CReplyToCommand(client, "%t", "Minimal Players Not Met", g_szChatPrefix);
 		return;			
 	}
 	
 	if (g_Voted[client])
 	{
-		ReplyToCommand(client, "[SM] %t", "Already Voted", g_Votes, g_VotesNeeded);
+		CReplyToCommand(client, "%t", "Already Voted", g_szChatPrefix, g_Votes, g_VotesNeeded);
 		return;
 	}
 
@@ -211,7 +218,7 @@ void AttemptRTV(int client)
 	{
 		if (surftimer_GetPlayerPoints(client) < GetConVarInt(g_Cvar_PointsRequirement))
 		{
-			PrintToChat(client, "[SM] %t", "Point Requirement");
+			CPrintToChat(client, "%t", "Point Requirement", g_szChatPrefix);
 			return;
 		}
 	}
@@ -220,7 +227,7 @@ void AttemptRTV(int client)
 	{
 		if (surftimer_GetPlayerRank(client) > GetConVarInt(g_Cvar_RankRequirement) || surftimer_GetPlayerRank(client) == 0)
 		{
-			PrintToChat(client, "[SM] %t", "Rank Requirement", GetConVarInt(g_Cvar_RankRequirement));
+			CPrintToChat(client, "%t", "Rank Requirement", g_szChatPrefix, GetConVarInt(g_Cvar_RankRequirement));
 			return;
 		}
 	}
@@ -231,7 +238,7 @@ void AttemptRTV(int client)
 	g_Votes++;
 	g_Voted[client] = true;
 	
-	PrintToChatAll("[SM] %t", "RTV Requested", name, g_Votes, g_VotesNeeded);
+	CPrintToChatAll("%t", "RTV Requested", g_szChatPrefix, name, g_Votes, g_VotesNeeded);
 	
 	if (g_Votes >= g_VotesNeeded)
 	{
@@ -259,7 +266,7 @@ void StartRTV()
 		{
 			GetMapDisplayName(map, map, sizeof(map));
 			
-			PrintToChatAll("[SM] %t", "Changing Maps", map);
+			CPrintToChatAll("%t", "Changing Maps", g_szChatPrefix, map);
 			CreateTimer(5.0, Timer_ChangeMap, _, TIMER_FLAG_NO_MAPCHANGE);
 			g_InChange = true;
 			

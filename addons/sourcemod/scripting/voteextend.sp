@@ -8,6 +8,7 @@
 #include <sourcemod>
 #include <SurfTimer>
 #include <autoexecconfig>
+#include <colorlib>
 
 #pragma newdecls required
 #pragma semicolon 1
@@ -24,6 +25,10 @@ int g_VoteExtends = 0; 											// How many extends have happened in current m
 char g_szSteamID[MAXPLAYERS + 1][32];							// Client's steamID
 char g_szUsedVoteExtend[MAXPLAYERS+1][32]; 						// SteamID's which triggered extend vote
 
+// Chat prefix
+char g_szChatPrefix[256];
+ConVar g_ChatPrefix = null;
+
 public Plugin myinfo = 
 {
 	name = "SurfTimer Vote Extend",
@@ -35,6 +40,9 @@ public Plugin myinfo =
 
 public void OnPluginStart()
 {
+
+	LoadTranslations("voteextend.phrases");
+
 	RegConsoleCmd("sm_ve", Command_VoteExtend, "SurfTimer | Vote to extend the map");
 	RegConsoleCmd("sm_voteextend", Command_VoteExtend, "SurfTimer | Vote to extend the map");
 	RegConsoleCmd("sm_extend", Command_VoteExtend, "SurfTimer | Vote to extend the map");
@@ -70,6 +78,9 @@ public void OnClientPostAdminCheck(int client)
 
 public void OnConfigsExecuted()
 {
+	g_ChatPrefix = FindConVar("ck_chat_prefix");
+	GetConVarString(g_ChatPrefix, g_szChatPrefix, sizeof(g_szChatPrefix));
+	
 	CreateTimer(g_fInitialVoteDelay.FloatValue, Timer_Delay, _, TIMER_FLAG_NO_MAPCHANGE);
 }
 
@@ -87,26 +98,26 @@ public Action Command_VoteExtend(int client, int args)
 	{
 		if(!surftimer_IsClientVip(client))
 		{
-			ReplyToCommand(client, "SurfTimer | This is a VIP feature.");
+			CReplyToCommand(client, "%t","VIP Feature", g_szChatPrefix);
 			return Plugin_Handled;
 		}
 	}
 	
 	if (IsVoteInProgress())
 	{
-		ReplyToCommand(client, "SurfTimer | Please wait until the current vote has finished.");
+		CReplyToCommand(client, "%t", "Vote In Progress", g_szChatPrefix);
 		return Plugin_Handled;
 	}
 
 	if (g_VoteExtends >= GetConVarInt(g_hMaxVoteExtends))
 	{
-		ReplyToCommand(client, "SurfTimer | There have been too many extends this map.");
+		CReplyToCommand(client, "%t", "Max Extends", g_szChatPrefix);
 		return Plugin_Handled;
 	}
 
 	if (!g_bVEAllowed)
 	{
-		ReplyToCommand(client, "SurfTimer | Vote Extend is not allowed yet.");
+		CReplyToCommand(client, "%t", "Not Allowed Yet", g_szChatPrefix);
 		return Plugin_Handled;
 	}
 	
@@ -120,7 +131,7 @@ public Action Command_VoteExtend(int client, int args)
 		{
 			if (StrEqual(g_szUsedVoteExtend[i], g_szSteamID[client], false))
 			{
-				ReplyToCommand(client, "SurfTimer | You have already used your vote to extend this map.");
+				CReplyToCommand(client, "%t", "Alredy Voted", g_szChatPrefix);
 				return Plugin_Handled;
 			}
 		}
@@ -135,7 +146,7 @@ public void StartVoteExtend(int client)
 {
 	char szPlayerName[MAX_NAME_LENGTH];	
 	GetClientName(client, szPlayerName, MAX_NAME_LENGTH);
-	PrintToChatAll("[SurfTimer] Vote to Extend started by %s", szPlayerName);
+	CPrintToChatAll("Vote to Extend started by %s", g_szChatPrefix, szPlayerName);
 
 	g_szUsedVoteExtend[g_VoteExtends] = g_szSteamID[client];	// Add the user's steam ID to the list
 	g_VoteExtends++;	// Increment the total number of vote extends so far
@@ -176,14 +187,14 @@ public void H_VoteExtendCallback(Menu menu, int num_votes, int num_clients, cons
 
 	if (votesYes > votesNo) // A tie is a failure
 	{
-		PrintToChatAll("[SurfTimer] Vote to Extend succeeded - Votes Yes: %i | Votes No: %i", votesYes, votesNo);
+		CPrintToChatAll("%t", "Vote Success", g_szChatPrefix, votesYes, votesNo);
 		ExtendMapTimeLimit(RoundToFloor(GetConVarFloat(g_hVoteExtendTime)*60));
 		g_bVEAllowed = false;
 		CreateTimer(g_fInterval.FloatValue, Timer_Delay, _, TIMER_FLAG_NO_MAPCHANGE);
 	} 
 	else
 	{
-		PrintToChatAll("[SurfTimer] Vote to Extend failed - Votes Yes: %i | Votes No: %i", votesYes, votesNo);
+		CPrintToChatAll("%t", "Vote Fail", g_szChatPrefix, votesYes, votesNo);
 		g_bVEAllowed = false;
 		CreateTimer(g_fInterval.FloatValue, Timer_Delay, _, TIMER_FLAG_NO_MAPCHANGE);
 	}
