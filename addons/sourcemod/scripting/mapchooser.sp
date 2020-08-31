@@ -1340,6 +1340,7 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 				LogError("Error 404: Map %s was found in database but not on server! Please delete entry in database or add the map to server!", szMapName);
 		}
 	}
+	CreateNextVote();
 }
 
 public void GetMapDisplayNameTier(char[] szMapName, char szBuffer[PLATFORM_MAX_PATH], int size)
