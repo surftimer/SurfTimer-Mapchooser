@@ -336,8 +336,6 @@ void AttemptNominate(int client)
 {
 	g_MapMenu.SetTitle("%T", "Nominate Title", client);
 	g_MapMenu.Display(client, MENU_TIME_FOREVER);
-	
-	return;
 }
 
 void BuildMapMenu()
@@ -541,9 +539,7 @@ public void db_setupDatabase()
 	if (!StrEqual(szIdent, "mysql", false))
 	{
 		SetFailState("[Nominations] Invalid database type");
-		return;
 	}
-	return;
 }
 
 public void SelectMapList()
