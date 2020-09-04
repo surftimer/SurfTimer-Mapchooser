@@ -62,4 +62,33 @@
 		"#format"		"{1:s}"
 		"en"			"{1} {yellow}Usage: sm_setnextmap <map>"
 	}
+	
+	"Bonuses"
+	{
+		"#format"		"{1:i}"
+		"en"			"- Bonuses {1}"
+	}
+
+	"Linear"
+	{
+		"en"			"- Linear"
+	}
+
+	"Staged"
+	{
+		"#format"		"{1:i}"
+		"en"			"- Stages {1}"
+	}
+
+	"Tier"
+	{
+		"#format"		"{1:i}"
+		"en"			"Tier {1}"
+	}
+
+	"Final Map Info"
+	{
+		"#format"		"{1:s},{2:s},{3:s},{4:s}" // 1-map 2-tier 3-stage 4-bonus
+		"en"			"{1}\n {2} {3} {4}\n "
+	}
 }

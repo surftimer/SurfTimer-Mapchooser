@@ -49,7 +49,14 @@ public Plugin myinfo =
 
 ConVar g_Cvar_ExcludeOld;
 ConVar g_Cvar_ExcludeCurrent;
+
+// ohh boy
 ConVar g_Cvar_ServerTier;
+int g_TierMax;
+int g_TierMin;
+char g_szTier[16];
+char g_szBuffer[2][32];
+
 
 // Chat prefix
 char g_szChatPrefix[256];
@@ -59,6 +66,12 @@ Menu g_MapMenu = null;
 
 ArrayList g_MapList = null;
 ArrayList g_MapListTier = null;
+
+// Tiered menu
+ConVar g_Cvar_Tiered_Menu;
+Menu g_TieredMenu = null;
+ArrayList g_aTierMenus;
+ArrayList g_MapTierInt = null;
 
 #define MAPSTATUS_ENABLED (1<<0)
 #define MAPSTATUS_DISABLED (1<<1)
@@ -73,19 +86,21 @@ Handle g_hDb = null;
 #define PERCENT 0x25
 
 //SQL Queries
-char sql_SelectMapListSpecific[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier = %s GROUP BY ck_zones.mapname ORDER BY tier ASC, mapname ASC";
-char sql_SelectMapListRange[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier >= %s AND tier <= %s GROUP BY ck_zones.mapname ORDER BY tier ASC, mapname ASC";
-char sql_SelectMapList[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) GROUP BY ck_zones.mapname ORDER BY tier ASC, mapname ASC";
+char sql_SelectMapListSpecific[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier = %s GROUP BY mapname, tier, bonus ORDER BY mapname ASC";
+char sql_SelectMapListRange[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier >= %s AND tier <= %s GROUP BY mapname, tier, bonus ORDER BY mapname ASC";
+char sql_SelectMapList[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) GROUP BY mapname, tier, bonus ORDER BY mapname ASC";
 
 public void OnPluginStart()
 {
-	LoadTranslations("nominations.phrases");
+	LoadTranslations("st-nominations.phrases");
 
 	db_setupDatabase();
 	
 	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = new ArrayList(arraySize);
 	g_MapListTier = new ArrayList(arraySize);
+	g_MapTierInt = new ArrayList(arraySize);
+	g_aTierMenus = new ArrayList(arraySize);
 
 	AutoExecConfig_SetCreateDirectory(true);
 	AutoExecConfig_SetCreateFile(true);
@@ -93,6 +108,7 @@ public void OnPluginStart()
 	
 	g_Cvar_ExcludeOld = AutoExecConfig_CreateConVar("sm_nominate_excludeold", "1", "Specifies if the MapChooser excluded maps should also be excluded from Nominations", 0, true, 0.00, true, 1.0);
 	g_Cvar_ExcludeCurrent = AutoExecConfig_CreateConVar("sm_nominate_excludecurrent", "1", "Specifies if the current map should be excluded from the Nominations list", 0, true, 0.00, true, 1.0);
+	g_Cvar_Tiered_Menu = AutoExecConfig_CreateConVar("sm_nominate_tier_menu", "1", "1 - Menu with tier sub-menus, 0 - Simple menu sorted by tier then alphabetically", 0, true, 0.00, true, 1.0);
 
 	AutoExecConfig_ExecuteFile();
 	AutoExecConfig_CleanFile();
@@ -107,6 +123,32 @@ public void OnConfigsExecuted()
 {
 	g_ChatPrefix = FindConVar("ck_chat_prefix");
 	GetConVarString(g_ChatPrefix, g_szChatPrefix, sizeof(g_szChatPrefix));
+
+	g_Cvar_ServerTier = FindConVar("sm_server_tier");
+	GetConVarString(g_Cvar_ServerTier, g_szTier, sizeof(g_szTier));
+	ExplodeString(g_szTier, ".", g_szBuffer, 2, 32);
+	if (StrEqual(g_szBuffer[1], "0"))
+	{
+		g_TierMin = StringToInt(g_szBuffer[0]);
+		g_TierMax = StringToInt(g_szBuffer[0]);
+	}
+	else if (strlen(g_szBuffer[1]) > 0)
+	{
+		g_TierMin = StringToInt(g_szBuffer[0]);
+		g_TierMax = StringToInt(g_szBuffer[1]);
+	}
+	else
+	{
+		g_TierMin = 1;
+		g_TierMax = 8;
+	}
+	
+	if (g_TierMax < g_TierMin)
+	{
+		int temp = g_TierMax;
+		g_TierMax = g_TierMin;
+		g_TierMin = temp;
+	}
 	
 	SelectMapList();
 }
@@ -195,8 +237,11 @@ public void OnClientSayCommand_Post(int client, const char[] command, const char
 	{
 		ReplySource old = SetCmdReplySource(SM_REPLY_TO_CHAT);
 		
-		AttemptNominate(client);
-		
+		if (GetConVarBool(g_Cvar_Tiered_Menu)) 
+			g_TieredMenu.Display(client, MENU_TIME_FOREVER);
+		else
+			AttemptNominate(client);
+
 		SetCmdReplySource(old);
 	}
 }
@@ -210,7 +255,11 @@ public Action Command_Nominate(int client, int args)
 	
 	if (args == 0)
 	{
-		AttemptNominate(client);
+		if (GetConVarBool(g_Cvar_Tiered_Menu)) 
+			g_TieredMenu.Display(client, MENU_TIME_FOREVER);
+		else
+			AttemptNominate(client);
+
 		return Plugin_Handled;
 	}
 	
@@ -351,7 +400,7 @@ void BuildMapMenu()
 		g_mapTrie.SetValue(map, status);
 	}
 
-	g_MapMenu.ExitButton = true;
+	g_MapMenu.ExitBackButton = true;
 
 	delete excludeMaps;
 }
@@ -435,24 +484,43 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 			{
 				if ((status & MAPSTATUS_EXCLUDE_CURRENT) == MAPSTATUS_EXCLUDE_CURRENT)
 				{
-					Format(display, sizeof(display), "%s (%T)", displayName, "Current Map", param1);
+					Format(display, sizeof(display), "%s %T", displayName, "Current Map", param1);
 					return RedrawMenuItem(display);
 				}
 				
 				if ((status & MAPSTATUS_EXCLUDE_PREVIOUS) == MAPSTATUS_EXCLUDE_PREVIOUS)
 				{
-					Format(display, sizeof(display), "%s (%T)", displayName, "Recently Played", param1);
+					Format(display, sizeof(display), "%s %T", displayName, "Recently Played", param1);
 					return RedrawMenuItem(display);
 				}
 				
 				if ((status & MAPSTATUS_EXCLUDE_NOMINATED) == MAPSTATUS_EXCLUDE_NOMINATED)
 				{
-					Format(display, sizeof(display), "%s (%T)", displayName, "Nominated", param1);
+					Format(display, sizeof(display), "%s %T", displayName, "Nominated", param1);
 					return RedrawMenuItem(display);
 				}
 			}
 			
 			return 0;
+		}
+
+		case MenuAction_Cancel:
+		{
+			if (param2 == MenuCancel_ExitBack)
+			{
+				if (GetConVarBool(g_Cvar_Tiered_Menu))
+				{
+					g_TieredMenu.Display(param1, MENU_TIME_FOREVER);
+				}
+			}
+		}
+
+		case MenuAction_End:
+		{
+			if (menu != g_MapMenu && FindValueInArray(g_aTierMenus, menu) == -1)
+			{
+				delete menu;
+			}
 		}
 	}
 	
@@ -470,12 +538,7 @@ public void db_setupDatabase()
 	char szIdent[8];
 	SQL_ReadDriver(g_hDb, szIdent, 8);
 
-	if (strcmp(szIdent, "mysql", false) == 0)
-	{
-		// https://github.com/nikooo777/ckSurf/pull/58 - eeeee that is an issue in a half || Also https://discordapp.com/channels/366959507764674560/379572504542445568/729723679541559336
-		SQL_FastQuery(g_hDb, "SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-	}
-	else
+	if (!StrEqual(szIdent, "mysql", false))
 	{
 		SetFailState("[Nominations] Invalid database type");
 		return;
@@ -485,18 +548,14 @@ public void db_setupDatabase()
 
 public void SelectMapList()
 {
-	char szQuery[512], szTier[16], szBuffer[2][32];
+	char szQuery[512];
 	
-	g_Cvar_ServerTier = FindConVar("sm_server_tier");
-	GetConVarString(g_Cvar_ServerTier, szTier, sizeof(szTier));
-	ExplodeString(szTier, ".", szBuffer, 2, 32);
-
-	if (StrEqual(szBuffer[1], "0"))
+	if (StrEqual(g_szBuffer[1], "0"))
 		// OLD QUERY Format(szQuery, sizeof(szQuery), "SELECT mapname, tier FROM ck_maptier WHERE tier = %s ORDER BY tier asc, mapname asc;", szBuffer[0]);
-		Format(szQuery, sizeof(szQuery), sql_SelectMapListSpecific, szBuffer[0]);
-	else if (strlen(szBuffer[1]) > 0)
+		Format(szQuery, sizeof(szQuery), sql_SelectMapListSpecific, g_szBuffer[0]);
+	else if (strlen(g_szBuffer[1]) > 0)
 		// OLD QUERY Format(szQuery, sizeof(szQuery), "SELECT mapname, tier FROM ck_maptier WHERE tier >= %s AND tier <= %s ORDER BY tier asc, mapname asc;", szBuffer[0], szBuffer[1]);
-		Format(szQuery, sizeof(szQuery), sql_SelectMapListRange, szBuffer[0], szBuffer[1]);
+		Format(szQuery, sizeof(szQuery), sql_SelectMapListRange, g_szBuffer[0], g_szBuffer[1]);
 	else
 		// OLD QUERY Format(szQuery, sizeof(szQuery), "SELECT mapname, tier FROM ck_maptier ORDER BY tier asc, mapname asc;");
 		Format(szQuery, sizeof(szQuery), sql_SelectMapList);
@@ -516,9 +575,10 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 	{
 		g_MapList.Clear();
 		g_MapListTier.Clear();
+		g_MapTierInt.Clear();
 
 		int tier, zones, bonus;
-		char szValue[256], szMapName[128], stages[128], bonuses[128];
+		char szValue[256], szMapName[128], stages[128], bonuses[128], sztier[128];
 		while (SQL_FetchRow(hndl))
 		{
 			SQL_FetchString(hndl, 0, szMapName, sizeof(szMapName));
@@ -528,30 +588,116 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 
 			if (zones == 1)
 			{
-				Format(stages, sizeof(stages), "- Linear");
+				Format(stages, sizeof(stages), "%t", "Linear");
 			}
 			else
-				Format(stages, sizeof(stages), "- Stages %d", zones);
+				Format(stages, sizeof(stages), "%t", "Staged", zones);
 
 			if (bonus == 0)
 			{
 				Format(bonuses, sizeof(bonuses), "");
 			}
 			else
-				Format(bonuses, sizeof(bonuses), "- Bonuses %d", bonus);
+				Format(bonuses, sizeof(bonuses), "%t", "Bonuses", bonus);
+
+			Format(sztier, sizeof(sztier), "%t", "Tier", tier);
 			
-			Format(szValue, sizeof(szValue), "%s - Tier %d %s %s", szMapName, tier, stages, bonuses);
+			Format(szValue, sizeof(szValue), "%t", "Final Map Info", szMapName, sztier, stages, bonuses);
 
 			if (IsMapValid(szMapName))
 			{
 				g_MapList.PushString(szMapName);
 				g_MapListTier.PushString(szValue);
+				g_MapTierInt.Push(tier);
 			}
 			else
 				LogError("Error 404: Map %s was found in database but not on server! Please delete entry in database or add the map to server!", szMapName);
 		}
 
 		BuildMapMenu();
+
+		if (GetConVarBool(g_Cvar_Tiered_Menu))
+		{
+			BuildTierMenus();
+		}
+	}
+}
+
+// COPY PASTA TIME! https://github.com/Sneaks-Community/sourcemod-mapchooser-extended/
+void BuildTierMenus()
+{
+	// InitTierMenus
+	g_aTierMenus.Clear();
+
+	for(int i = g_TierMin; i <= g_TierMax; i++)
+	{
+		Menu TierMenu = new Menu(Handler_MapSelectMenu, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
+		TierMenu.SetTitle("%t", "Nominate Tier Title", i);
+		TierMenu.ExitBackButton = true;
+
+		g_aTierMenus.Push(TierMenu);
+	}
+
+	char map[PLATFORM_MAX_PATH];
+	for (int i = 0; i < g_MapList.Length; i++)
+	{
+		
+		g_MapList.GetString(i, map, sizeof(map));
+		int tier = g_MapTierInt.Get(i);
+
+		Format(map, sizeof(map), "%s.", map);
+		
+		FindMap(map, map, sizeof(map));
+		
+		char displayName[PLATFORM_MAX_PATH];
+		GetArrayString(g_MapListTier, i, displayName, sizeof(displayName));
+
+		if (g_TierMin <= tier <= g_TierMax)
+		{
+			AddMenuItem(g_aTierMenus.Get(tier-g_TierMin), map, displayName);
+		}
+	}
+
+	// BuildTieredMenu
+	delete g_TieredMenu;
+
+	g_TieredMenu = new Menu(TiersMenuHandler);
+	g_TieredMenu.ExitButton = true;
+	
+	g_TieredMenu.SetTitle("Nominate Menu");	
+	g_TieredMenu.AddItem("Alphabetic", "Alphabetic\n ");
+
+
+	for( int i = g_TierMin; i <= g_TierMax; ++i )
+	{
+		if (GetMenuItemCount(g_aTierMenus.Get(i-g_TierMin)) > 0) 
+		{
+			char tierDisplay[PLATFORM_MAX_PATH + 32];
+			Format(tierDisplay, sizeof(tierDisplay), "Tier %i", i);
+
+			char tierString[PLATFORM_MAX_PATH + 32];
+			Format(tierString, sizeof(tierString), "%i", i);
+			g_TieredMenu.AddItem(tierString, tierDisplay);
+		}
+	}
+
+}
+
+public int TiersMenuHandler(Menu menu, MenuAction action, int client, int param2) 
+{
+	if (action == MenuAction_Select) 
+	{
+		char option[PLATFORM_MAX_PATH];
+		menu.GetItem(param2, option, sizeof(option));
+
+		if (StrEqual(option , "Alphabetic")) 
+		{
+			AttemptNominate(client);
+		}
+		else 
+		{
+			DisplayMenu(g_aTierMenus.Get(StringToInt(option)-g_TierMin), client, MENU_TIME_FOREVER);
+		}
 	}
 }
 

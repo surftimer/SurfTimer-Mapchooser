@@ -73,7 +73,7 @@ bool g_InChange = false;
 
 public void OnPluginStart()
 {
-	LoadTranslations("rockthevote.phrases");
+	LoadTranslations("st-rockthevote.phrases");
 
 	AutoExecConfig_SetCreateDirectory(true);
 	AutoExecConfig_SetCreateFile(true);

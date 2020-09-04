@@ -113,9 +113,9 @@ Handle g_hDb = null;
 #define PERCENT 0x25
 
 //SQL Queries
-char sql_SelectMapListSpecific[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier = %s GROUP BY ck_zones.mapname ORDER BY tier ASC, mapname ASC";
-char sql_SelectMapListRange[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier >= %s AND tier <= %s GROUP BY ck_zones.mapname ORDER BY tier ASC, mapname ASC";
-char sql_SelectMapList[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) GROUP BY ck_zones.mapname ORDER BY tier ASC, mapname ASC";
+char sql_SelectMapListSpecific[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier = %s GROUP BY mapname, tier, bonus ORDER BY mapname ASC";
+char sql_SelectMapListRange[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier >= %s AND tier <= %s GROUP BY mapname, tier, bonus ORDER BY mapname ASC";
+char sql_SelectMapList[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) GROUP BY mapname, tier, bonus ORDER BY mapname ASC";
 
 /* Upper bound of how many team there could be */
 #define MAXTEAMS 10
@@ -126,7 +126,7 @@ int g_winCount[MAXTEAMS];
 
 public void OnPluginStart()
 {
-	LoadTranslations("mapchooser.phrases");
+	LoadTranslations("st-mapchooser.phrases");
 
 	db_setupDatabase();
 	
@@ -1260,12 +1260,7 @@ public void db_setupDatabase()
 	char szIdent[8];
 	SQL_ReadDriver(g_hDb, szIdent, 8);
 
-	if (strcmp(szIdent, "mysql", false) == 0)
-	{
-		// https://github.com/nikooo777/ckSurf/pull/58 - eeeee that is an issue in a half || Also https://discordapp.com/channels/366959507764674560/379572504542445568/729723679541559336
-		SQL_FastQuery(g_hDb, "SET sql_mode=(SELECT REPLACE(@@sql_mode,'ONLY_FULL_GROUP_BY',''));");
-	}
-	else
+	if (!StrEqual(szIdent, "mysql", false))
 	{
 		SetFailState("[Mapchooser] Invalid database type");
 		return;
@@ -1297,7 +1292,7 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 {
 	if (hndl == null)
 	{
-		LogError("[Nominations] SQL Error (SelectMapListCallback): %s", error);
+		LogError("[Mapchooser] SQL Error (SelectMapListCallback): %s", error);
 		return;
 	}
 
@@ -1306,7 +1301,7 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 		g_MapList.Clear();
 		g_MapListTier.Clear();
 
-		char szMapName[128], szValue[256], stages[128], bonuses[128];
+		char szMapName[128], szValue[256], stages[128], bonuses[128], sztier[128];
 		int tier, zones, bonus;
 		while (SQL_FetchRow(hndl))
 		{
@@ -1317,19 +1312,21 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 
 			if (zones == 1)
 			{
-				Format(stages, sizeof(stages), "- Linear");
+				Format(stages, sizeof(stages), "%t", "Linear");
 			}
 			else
-				Format(stages, sizeof(stages), "- Stages %d", zones);
+				Format(stages, sizeof(stages), "%t", "Staged", zones);
 
 			if (bonus == 0)
 			{
 				Format(bonuses, sizeof(bonuses), "");
 			}
 			else
-				Format(bonuses, sizeof(bonuses), "- Bonuses %d", bonus);
+				Format(bonuses, sizeof(bonuses), "%t", "Bonuses", bonus);
+
+			Format(sztier, sizeof(sztier), "%t", "Tier", tier);
 			
-			Format(szValue, sizeof(szValue), "%s - Tier %d %s %s", szMapName, tier, stages, bonuses);
+			Format(szValue, sizeof(szValue), "%t", "Final Map Info", szMapName, sztier, stages, bonuses);
 
 			if (IsMapValid(szMapName))
 			{
