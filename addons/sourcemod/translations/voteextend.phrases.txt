@@ -35,6 +35,12 @@
         "#format"       "{1:s},{2:s}"
         "en"            "{1} Vote to Extend started by {2}"
     }
+    
+    "Vote Menu"
+    {
+        "#format"       "{1:s}"
+        "en"            "Extend map for {1} minutes?"
+    }
 
     "Vote Success"
     {

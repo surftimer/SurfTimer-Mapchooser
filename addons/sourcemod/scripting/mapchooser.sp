@@ -46,7 +46,7 @@ public Plugin myinfo =
 	name = "SurfTimer MapChooser",
 	author = "AlliedModders LLC & SurfTimer Contributors",
 	description = "Automated Map Voting",
-	version = "1.6",
+	version = "1.8",
 	url = "https://github.com/qawery-just-sad/surftimer-mapchooser"
 };
 
@@ -1265,7 +1265,6 @@ public void db_setupDatabase()
 		SetFailState("[Mapchooser] Invalid database type");
 		return;
 	}
-	return;
 }
 
 public void SelectMapList()

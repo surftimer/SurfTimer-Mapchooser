@@ -34,7 +34,7 @@ public Plugin myinfo =
 	name = "SurfTimer Vote Extend",
 	author = "SurfTimer Contributors",
 	description = "Allows players to vote extend the map",
-	version = "1.6",
+	version = "1.8",
 	url = "https://github.com/qawery-just-sad/surftimer-mapchooser"
 };
 
@@ -146,7 +146,7 @@ public void StartVoteExtend(int client)
 {
 	char szPlayerName[MAX_NAME_LENGTH];	
 	GetClientName(client, szPlayerName, MAX_NAME_LENGTH);
-	CPrintToChatAll("Vote to Extend started by %s", g_szChatPrefix, szPlayerName);
+	CPrintToChatAll("%t", "Vote Start", g_szChatPrefix, szPlayerName);
 
 	g_szUsedVoteExtend[g_VoteExtends] = g_szSteamID[client];	// Add the user's steam ID to the list
 	g_VoteExtends++;	// Increment the total number of vote extends so far
@@ -158,7 +158,7 @@ public void StartVoteExtend(int client)
 	char buffer[8];
 	IntToString(RoundToFloor(GetConVarFloat(g_hVoteExtendTime)), buffer, sizeof(buffer));
 
-	Format(szMenuTitle, sizeof(szMenuTitle), "Extend map for %s minutes?", buffer);
+	Format(szMenuTitle, sizeof(szMenuTitle), "%t", "Vote Menu", buffer);
 	SetMenuTitle(voteExtend, szMenuTitle);
 	
 	AddMenuItem(voteExtend, "", "Yes");
