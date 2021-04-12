@@ -34,7 +34,7 @@ public Plugin myinfo =
 	name = "SurfTimer Vote Extend",
 	author = "SurfTimer Contributors",
 	description = "Allows players to vote extend the map",
-	version = "1.8",
+	version = "1.8.3",
 	url = "https://github.com/qawery-just-sad/surftimer-mapchooser"
 };
 
