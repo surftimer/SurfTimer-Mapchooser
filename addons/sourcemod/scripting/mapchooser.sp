@@ -35,7 +35,7 @@
 #include <sourcemod>
 #include <mapchooser>
 #include <nextmap>
-#include <SurfTimer>
+#include <surftimer>
 #include <autoexecconfig>
 #include <colorlib>
 
