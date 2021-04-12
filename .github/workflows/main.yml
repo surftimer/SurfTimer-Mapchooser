@@ -21,7 +21,7 @@ jobs:
         SOURCEMOD_PATH=$GITHUB_WORKSPACE/addons/sourcemod
         echo "SOURCEMOD_PATH=$SOURCEMOD_PATH" >> $GITHUB_ENV                  
         echo "SCRIPTS_PATH=$SOURCEMOD_PATH/scripting" >> $GITHUB_ENV           
-        echo "INCLUDE_PATH=${{env.SCRIPTS_PATH}}/include" >> $GITHUB_ENV   
+        echo "INCLUDE_PATH=$SOURCEMOD_PATH/scripting/include" >> $GITHUB_ENV   
         TOOLS_PATH=$GITHUB_WORKSPACE/tools                                    
         echo "TOOLS_PATH=$TOOLS_PATH" >> $GITHUB_ENV
         
