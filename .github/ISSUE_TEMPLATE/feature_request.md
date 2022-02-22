@@ -1,9 +1,9 @@
 ---
-name: Feature request
+name: Feature Request
 about: Suggest an idea for this project
 title: "[ENHANCEMENT]"
-labels: enhancement, p-LOW
-assignees: qawery-just-sad
+labels: enhancement
+assignees: 1zc
 
 ---
 
