@@ -90,6 +90,7 @@ Handle g_RetryTimer = null;
 /* Data Handles */
 ArrayList g_MapList;
 ArrayList g_MapListTier;
+ArrayList g_MapListWhiteList;
 ArrayList g_NominateList;
 ArrayList g_NominateOwners;
 ArrayList g_OldMapList;
@@ -103,7 +104,7 @@ bool g_WaitingForVote;
 bool g_MapVoteCompleted;
 bool g_ChangeMapAtRoundEnd;
 bool g_ChangeMapInProgress;
-// int g_mapFileSerial = -1;
+int g_mapFileSerial = -1;
 
 bool g_PointsREQ[MAXPLAYERS+1] = {false, ...};
 bool g_RankREQ[MAXPLAYERS+1] = {false, ...};
@@ -141,6 +142,7 @@ public void OnPluginStart()
 	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = new ArrayList(arraySize);
 	g_MapListTier = new ArrayList(arraySize);
+	g_MapListWhiteList = new ArrayList(arraySize);
 	g_NominateList = new ArrayList(arraySize);
 	g_NominateOwners = new ArrayList();
 	g_OldMapList = new ArrayList(arraySize);
@@ -167,7 +169,7 @@ public void OnPluginStart()
 	g_Cvar_RunOffPercent = AutoExecConfig_CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff", _, true, 0.0, true, 100.0);
 	
 	// KP Surf ConVars
-	g_Cvar_ServerTier = AutoExecConfig_CreateConVar("sm_server_tier", "0", "Specifies the tier range for maps, for example if you want a tier 1-3 server make it 1.3, a tier 2 only server would be 2.0, etc", 0, true, 0.0, true, 8.0);
+	g_Cvar_ServerTier = AutoExecConfig_CreateConVar("sm_server_tier", "1.8", "Specifies the tier range for maps, for example if you want a tier 1-3 server make it 1.3, a tier 2 only server would be 2.0, etc", 0, true, 0.0, true, 8.0);
 
 	AutoExecConfig_ExecuteFile();
 	AutoExecConfig_CleanFile();
@@ -241,18 +243,18 @@ public APLRes AskPluginLoad2(Handle myself, bool late, char[] error, int err_max
 
 public void OnConfigsExecuted()
 {
-	// if (ReadMapList(g_MapList,
-	// 				 g_mapFileSerial, 
-	// 				 "mapchooser",
-	// 				 MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
-	// 	!= null)
+	if (ReadMapList(g_MapListWhiteList,
+					 g_mapFileSerial, 
+					 "mapchooser",
+					 MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
+		!= INVALID_HANDLE)
 		
-	// {
-	// 	if (g_mapFileSerial == -1)
-	// 	{
-	// 		LogError("Unable to create a valid map list.");
-	// 	}
-	// }
+	{
+		if (g_mapFileSerial == -1)
+		{
+			LogError("Unable to create a valid map list.");
+		}
+	}
 
 
 	g_ChatPrefix = FindConVar("ck_chat_prefix");
@@ -1362,13 +1364,13 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 			
 			Format(szValue, sizeof(szValue), "%t", "Final Map Info", szMapName, sztier, stages, bonuses);
 
-			if (IsMapValid(szMapName))
+			if (IsMapValid(szMapName) && FindStringInArray(g_MapListWhiteList, szMapName) > -1)
 			{
 				g_MapList.PushString(szMapName);
 				g_MapListTier.PushString(szValue);
 			}
-			else
-				LogError("Error 404: Map %s was found in database but not on server! Please delete entry in database or add the map to server!", szMapName);
+			// else
+				// LogError("Error 404: Map %s was found in database but not on server! Please delete entry in database or add the map to server!", szMapName);
 		}
 	}
 	CreateNextVote();

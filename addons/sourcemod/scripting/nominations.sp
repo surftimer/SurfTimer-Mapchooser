@@ -66,6 +66,8 @@ Menu g_MapMenu = null;
 
 ArrayList g_MapList = null;
 ArrayList g_MapListTier = null;
+ArrayList g_MapListWhiteList = null;
+int g_mapFileSerial = -1;
 
 // Tiered menu
 ConVar g_Cvar_Tiered_Menu;
@@ -99,6 +101,7 @@ public void OnPluginStart()
 	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
 	g_MapList = new ArrayList(arraySize);
 	g_MapListTier = new ArrayList(arraySize);
+	g_MapListWhiteList = new ArrayList(arraySize);
 	g_MapTierInt = new ArrayList(arraySize);
 	g_aTierMenus = new ArrayList(arraySize);
 
@@ -148,6 +151,18 @@ public void OnConfigsExecuted()
 		int temp = g_TierMax;
 		g_TierMax = g_TierMin;
 		g_TierMin = temp;
+	}
+
+	if (ReadMapList(g_MapListWhiteList,
+					g_mapFileSerial,
+					"nominations",
+					MAPLIST_FLAG_CLEARARRAY|MAPLIST_FLAG_MAPSFOLDER)
+		== INVALID_HANDLE)
+	{
+		if (g_mapFileSerial == -1)
+		{
+			SetFailState("Unable to create a valid map list.");
+		}
 	}
 	
 	SelectMapList();
@@ -601,14 +616,14 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 			
 			Format(szValue, sizeof(szValue), "%t", "Final Map Info", szMapName, sztier, stages, bonuses);
 
-			if (IsMapValid(szMapName))
+			if (IsMapValid(szMapName) && FindStringInArray(g_MapListWhiteList, szMapName) > -1)
 			{
 				g_MapList.PushString(szMapName);
 				g_MapListTier.PushString(szValue);
 				g_MapTierInt.Push(tier);
 			}
-			else
-				LogError("Error 404: Map %s was found in database but not on server! Please delete entry in database or add the map to server!", szMapName);
+			// else
+				// LogError("Error 404: Map %s was found in database but not on server! Please delete entry in database or add the map to server!", szMapName);
 		}
 
 		BuildMapMenu();
