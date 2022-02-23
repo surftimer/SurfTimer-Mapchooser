@@ -150,7 +150,7 @@ public void OnPluginStart()
 	
 	AutoExecConfig_SetCreateDirectory(true);
 	AutoExecConfig_SetCreateFile(true);
-	AutoExecConfig_SetFile("mapchooser");
+	AutoExecConfig_SetFile("st-mapchooser");
 
 	g_Cvar_EndOfMapVote = AutoExecConfig_CreateConVar("sm_mapvote_endvote", "1", "Specifies if MapChooser should run an end of map vote", _, true, 0.0, true, 1.0);
 	g_Cvar_StartTime = AutoExecConfig_CreateConVar("sm_mapvote_start", "3.0", "Specifies when to start the vote based on time remaining.", _, true, 1.0);
@@ -169,7 +169,7 @@ public void OnPluginStart()
 	g_Cvar_RunOffPercent = AutoExecConfig_CreateConVar("sm_mapvote_runoffpercent", "50", "If winning choice has less than this percent of votes, hold a runoff", _, true, 0.0, true, 100.0);
 	
 	// KP Surf ConVars
-	g_Cvar_ServerTier = AutoExecConfig_CreateConVar("sm_server_tier", "1.8", "Specifies the tier range for maps, for example if you want a tier 1-3 server make it 1.3, a tier 2 only server would be 2.0, etc", 0, true, 0.0, true, 8.0);
+	g_Cvar_ServerTier = AutoExecConfig_CreateConVar("sm_server_tier", "0", "Specifies the tier range for maps, for example if you want a tier 1-3 server make it 1.3, a tier 2 only server would be 2.0, etc", 0, true, 0.0, true, 8.0);
 
 	AutoExecConfig_ExecuteFile();
 	AutoExecConfig_CleanFile();

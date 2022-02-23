@@ -86,7 +86,7 @@ public void OnPluginStart()
 
 	AutoExecConfig_SetCreateDirectory(true);
 	AutoExecConfig_SetCreateFile(true);
-	AutoExecConfig_SetFile("rtv");
+	AutoExecConfig_SetFile("st-rtv");
 	
 	g_Cvar_Needed = AutoExecConfig_CreateConVar("sm_rtv_needed", "0.60", "Percentage of players needed to rockthevote (Def 60%)", 0, true, 0.05, true, 1.0);
 	g_Cvar_MinPlayers = AutoExecConfig_CreateConVar("sm_rtv_minplayers", "0", "Number of players required before RTV will be enabled.", 0, true, 0.0, true, float(MAXPLAYERS));

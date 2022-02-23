@@ -138,7 +138,7 @@ forward void OnMapVoteStarted();
 public SharedPlugin __pl_mapchooser =
 {
 	name = "mapchooser",
-	file = "mapchooser.smx",
+	file = "st-mapchooser.smx",
 #if defined REQUIRE_PLUGIN
 	required = 1,
 #else
