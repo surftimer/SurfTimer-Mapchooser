@@ -73,7 +73,7 @@
 	"Final Map Info"
 	{
 		"#format"		"{1:s},{2:s},{3:s},{4:s}" // 1-map 2-tier 3-stage 4-bonus
-		"en"			"{1}\n {2} {3} {4}\n "
+		"en"			"{1} | {2} {3} {4}"
 	}
 
 	"Can't Nominate Current Map"
