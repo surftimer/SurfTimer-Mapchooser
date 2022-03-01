@@ -355,12 +355,77 @@ void AttemptNominate(int client)
 	g_MapMenu.Display(client, MENU_TIME_FOREVER);
 }
 
-void AttemptIncompleteNominate(int client)
+void IncompleteNominate_SelectStyle(int client)
+{
+	Menu styleSelect = CreateMenu(IncompleteNominate_SelectStyleHandler);
+	SetMenuTitle(styleSelect, "Select Style - Incomplete Maps");
+	AddMenuItem(styleSelect, "0", "Normal");
+	AddMenuItem(styleSelect, "1", "Sideways");
+	AddMenuItem(styleSelect, "2", "Half-Sideways");
+	AddMenuItem(styleSelect, "3", "Backwards");
+	AddMenuItem(styleSelect, "4", "Low Gravity");
+	AddMenuItem(styleSelect, "5", "Slow Motion");
+	AddMenuItem(styleSelect, "6", "Fast Forward");
+
+	SetMenuOptionFlags(styleSelect, MENUFLAG_BUTTON_EXIT);
+	DisplayMenu(styleSelect, client, MENU_TIME_FOREVER);
+}
+
+public int IncompleteNominate_SelectStyleHandler(Menu styleSelect, MenuAction action, int param1, int param2)
+{
+	if (action == MenuAction_Select)
+	{
+		char info[32];
+		GetMenuItem(styleSelect, param2, info, sizeof(info));
+
+		if (StrContains(info, "0", false)!= -1) // Normal
+		{
+			AttemptIncompleteNominate(param1, 0);
+		}
+
+		else if (StrContains(info, "1", false)!= -1) // SW
+		{
+			AttemptIncompleteNominate(param1, 1);
+		}
+
+		else if (StrContains(info, "2", false)!= -1) // HSW
+		{
+			AttemptIncompleteNominate(param1, 2);
+		}
+
+		else if (StrContains(info, "3", false)!= -1) // BW
+		{
+			AttemptIncompleteNominate(param1, 3);
+		}
+
+		else if (StrContains(info, "4", false)!= -1) // LG
+		{
+			AttemptIncompleteNominate(param1, 4);
+		}
+
+		else if (StrContains(info, "5", false)!= -1) // SM
+		{
+			AttemptIncompleteNominate(param1, 5);
+		}
+
+		else if (StrContains(info, "6", false)!= -1) // FF
+		{
+			AttemptIncompleteNominate(param1, 6);
+		}
+	}
+
+	else
+	{
+		CloseHandle(styleSelect);
+	}
+}
+
+void AttemptIncompleteNominate(int client, int style)
 {
 	char szQuery[512], szSteamID[64];
 	GetClientAuthId(client, AuthId_Steam2, szSteamID, MAX_NAME_LENGTH, true);
 	
-	Format(szQuery, sizeof(szQuery), sql_SelectIncompleteMapList, szSteamID, 0);
+	Format(szQuery, sizeof(szQuery), sql_SelectIncompleteMapList, szSteamID, style);
 
 	SQL_TQuery(g_hDb, SQL_SelectIncompleteMapListCallback, szQuery, client, DBPrio_Low);
 }
@@ -377,7 +442,7 @@ void SQL_SelectIncompleteMapListCallback(Handle owner, Handle hndl, const char[]
 	{
 		Menu incompleteMapMenu = new Menu(Handler_MapSelectMenu, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
 
-		incompleteMapMenu.SetTitle("Nominate - Player Incomplete Map", client);
+		incompleteMapMenu.SetTitle("Nominate - Incomplete Maps", client);
 		char resolvedMap[PLATFORM_MAX_PATH], resultMap[PLATFORM_MAX_PATH], displayName[PLATFORM_MAX_PATH];
 		// int resultMapTier = 0;
 		ArrayList excludeMaps;
@@ -387,7 +452,8 @@ void SQL_SelectIncompleteMapListCallback(Handle owner, Handle hndl, const char[]
 			SQL_FetchString(hndl, 0, resultMap, sizeof(resultMap));
 			// resultMapTier = SQL_FetchInt(hndl, 1);
 
-			if (g_MapList.FindString(resultMap) > -1)
+			any trieStatus;
+			if (g_MapList.FindString(resultMap) > -1 && IsMapValid(resultMap) && g_mapTrie.GetValue(resultMap, trieStatus))
 			{
 				int status = MAPSTATUS_ENABLED;
 				g_MapList.GetString(g_MapList.FindString(resultMap), resolvedMap, sizeof(resolvedMap));
@@ -540,7 +606,7 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 			
 			if (!g_mapTrie.GetValue(map, status))
 			{
-				LogError("Menu selection of item not in trie. Major logic problem somewhere.");
+				LogError("Menu selection of item %s not in trie. Major logic problem somewhere.", map);
 				return ITEMDRAW_DEFAULT;
 			}
 			
@@ -562,7 +628,7 @@ public int Handler_MapSelectMenu(Menu menu, MenuAction action, int param1, int p
 			
 			if (!g_mapTrie.GetValue(map, status))
 			{
-				LogError("Menu selection of item not in trie. Major logic problem somewhere.");
+				LogError("Menu selection of item %s not in trie. Major logic problem somewhere.", map);
 				return 0;
 			}
 			
@@ -785,7 +851,7 @@ public int TiersMenuHandler(Menu menu, MenuAction action, int client, int param2
 
 		else if (StrEqual(option, "Incomplete"))
 		{
-			AttemptIncompleteNominate(client);
+			IncompleteNominate_SelectStyle(client);
 		}
 
 		else 
