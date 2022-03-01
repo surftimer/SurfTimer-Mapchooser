@@ -45,8 +45,8 @@ public Plugin myinfo =
 	name = "SurfTimer Rock The Vote",
 	author = "AlliedModders LLC & SurfTimer Contributors",
 	description = "Provides RTV Map Voting",
-	version = "1.8.3",
-	url = "https://github.com/qawery-just-sad/surftimer-mapchooser"
+	version = "2.0.0",
+	url = "https://github.com/1zc/surftimer-mapchooser"
 };
 
 ConVar g_Cvar_Needed;

@@ -43,8 +43,8 @@ public Plugin myinfo =
 	name = "SurfTimer Nominations",
 	author = "AlliedModders LLC & SurfTimer Contributors",
 	description = "Provides Map Nominations",
-	version = "1.8.3",
-	url = "https://github.com/qawery-just-sad/surftimer-mapchooser"
+	version = "2.0.0",
+	url = "https://github.com/1zc/surftimer-mapchooser"
 };
 
 ConVar g_Cvar_ExcludeOld;
@@ -91,6 +91,8 @@ Handle g_hDb = null;
 char sql_SelectMapListSpecific[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier = %s GROUP BY mapname, tier, bonus ORDER BY mapname ASC";
 char sql_SelectMapListRange[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) AND tier >= %s AND tier <= %s GROUP BY mapname, tier, bonus ORDER BY mapname ASC";
 char sql_SelectMapList[] = "SELECT ck_zones.mapname, tier, count(ck_zones.mapname), bonus FROM `ck_zones` INNER JOIN ck_maptier on ck_zones.mapname = ck_maptier.mapname LEFT JOIN ( SELECT mapname as map_2, MAX(ck_zones.zonegroup) as bonus FROM ck_zones GROUP BY mapname ) as a on ck_zones.mapname = a.map_2 WHERE (zonegroup = 0 AND zonetype = 1 or zonetype = 3) GROUP BY mapname, tier, bonus ORDER BY mapname ASC";
+char sql_SelectIncompleteMapList[] = "SELECT mapname FROM ck_maptier WHERE tier > 0 AND mapname NOT IN (SELECT mapname FROM ck_playertimes WHERE steamid = '%s' AND style = %i);";
+
 
 public void OnPluginStart()
 {
@@ -351,6 +353,79 @@ void AttemptNominate(int client)
 {
 	g_MapMenu.SetTitle("%T", "Nominate Title", client);
 	g_MapMenu.Display(client, MENU_TIME_FOREVER);
+}
+
+void AttemptIncompleteNominate(int client)
+{
+	char szQuery[512], szSteamID[64];
+	GetClientAuthId(client, AuthId_Steam2, szSteamID, MAX_NAME_LENGTH, true);
+	
+	Format(szQuery, sizeof(szQuery), sql_SelectIncompleteMapList, szSteamID, 0);
+
+	SQL_TQuery(g_hDb, SQL_SelectIncompleteMapListCallback, szQuery, client, DBPrio_Low);
+}
+
+void SQL_SelectIncompleteMapListCallback(Handle owner, Handle hndl, const char[] error, any client)
+{
+	if (hndl == null)
+	{
+		LogError("[Nominations] SQL Error (SQL_SelectIncompleteMapListCallback): %s", error);
+		return;
+	}
+
+	if (SQL_HasResultSet(hndl))
+	{
+		Menu incompleteMapMenu = new Menu(Handler_MapSelectMenu, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
+
+		incompleteMapMenu.SetTitle("Nominate - Player Incomplete Map", client);
+		char resolvedMap[PLATFORM_MAX_PATH], resultMap[PLATFORM_MAX_PATH], displayName[PLATFORM_MAX_PATH];
+		// int resultMapTier = 0;
+		ArrayList excludeMaps;
+
+		while (SQL_FetchRow(hndl))
+		{
+			SQL_FetchString(hndl, 0, resultMap, sizeof(resultMap));
+			// resultMapTier = SQL_FetchInt(hndl, 1);
+
+			if (g_MapList.FindString(resultMap) > -1)
+			{
+				int status = MAPSTATUS_ENABLED;
+				g_MapList.GetString(g_MapList.FindString(resultMap), resolvedMap, sizeof(resolvedMap));
+				//Format(displayName, sizeof(displayName), "%s | Tier %i", resultMap, resultMapTier);
+				g_MapListTier.GetString(g_MapList.FindString(resultMap), displayName, sizeof(displayName));
+
+				if (g_Cvar_ExcludeCurrent.BoolValue)
+				{
+					char currentMap[PLATFORM_MAX_PATH];
+					GetCurrentMap(currentMap, sizeof(currentMap));
+
+					if (StrEqual(resolvedMap, currentMap))
+					{
+						status = MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_CURRENT;
+					}
+				}
+				
+				/* Dont bother with this check if the current map check passed */
+				if (g_Cvar_ExcludeOld.BoolValue && status == MAPSTATUS_ENABLED)
+				{
+					excludeMaps = new ArrayList(ByteCountToCells(PLATFORM_MAX_PATH));
+					GetExcludeMapList(excludeMaps);
+
+					if (excludeMaps.FindString(resolvedMap) != -1)
+					{
+						status = MAPSTATUS_DISABLED|MAPSTATUS_EXCLUDE_PREVIOUS;
+					}
+
+					delete excludeMaps;
+				}
+
+				incompleteMapMenu.AddItem(resolvedMap, displayName);
+			}
+		}
+
+		incompleteMapMenu.ExitBackButton = true;
+		incompleteMapMenu.Display(client, MENU_TIME_FOREVER);
+	}
 }
 
 void BuildMapMenu()
@@ -677,7 +752,8 @@ void BuildTierMenus()
 	g_TieredMenu.ExitButton = true;
 	
 	g_TieredMenu.SetTitle("Nominate Menu");	
-	g_TieredMenu.AddItem("Alphabetic", "Alphabetic\n ");
+	g_TieredMenu.AddItem("Alphabetic", "Alphabetic");
+	g_TieredMenu.AddItem("Incomplete", "Incomplete Maps\n ");
 
 
 	for( int i = g_TierMin; i <= g_TierMax; ++i )
@@ -706,6 +782,12 @@ public int TiersMenuHandler(Menu menu, MenuAction action, int client, int param2
 		{
 			AttemptNominate(client);
 		}
+
+		else if (StrEqual(option, "Incomplete"))
+		{
+			AttemptIncompleteNominate(client);
+		}
+
 		else 
 		{
 			DisplayMenu(g_aTierMenus.Get(StringToInt(option)-g_TierMin), client, MENU_TIME_FOREVER);
