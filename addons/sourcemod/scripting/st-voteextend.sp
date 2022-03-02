@@ -33,15 +33,15 @@ public Plugin myinfo =
 {
 	name = "SurfTimer Vote Extend",
 	author = "SurfTimer Contributors",
-	description = "Allows players to vote extend the map",
+	description = "Allows players to vote extend map timelimit",
 	version = "1.8.3",
-	url = "https://github.com/qawery-just-sad/surftimer-mapchooser"
+	url = "https://github.com/1zc/surftimer-mapchooser"
 };
 
 public void OnPluginStart()
 {
 
-	LoadTranslations("voteextend.phrases");
+	LoadTranslations("st-voteextend.phrases");
 
 	RegConsoleCmd("sm_ve", Command_VoteExtend, "SurfTimer | Vote to extend the map");
 	RegConsoleCmd("sm_voteextend", Command_VoteExtend, "SurfTimer | Vote to extend the map");
@@ -49,7 +49,7 @@ public void OnPluginStart()
 
 	AutoExecConfig_SetCreateDirectory(true);
 	AutoExecConfig_SetCreateFile(true);
-	AutoExecConfig_SetFile("vote-extend");
+	AutoExecConfig_SetFile("st-vote-extend");
 	
 	g_hMaxVoteExtends = AutoExecConfig_CreateConVar("ck_max_vote_extends", "2", "The max number of VIP vote extends", FCVAR_NOTIFY, true, 0.0);
 	g_hVoteExtendTime = AutoExecConfig_CreateConVar("ck_vote_extend_time", "10.0", "The time in minutes that is added to the remaining map time if a vote extend is successful.", FCVAR_NOTIFY, true, 0.0);
