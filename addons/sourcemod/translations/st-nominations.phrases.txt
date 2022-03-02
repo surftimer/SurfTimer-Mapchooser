@@ -90,17 +90,17 @@
 
 	"Current Map"
 	{
-		"en"			"(Current Map)\n "
+		"en"			"(Current Map)"
 	}
 
 	"Recently Played"
 	{
-		"en"			"(Recently Played)\n "
+		"en"			"(Recently Played)"
 	}
 
 	"Nominated"
 	{
-		"en"			"(Nominated)\n "
+		"en"			"(Nominated)"
 	}
 
 	"Map was not found"
