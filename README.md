@@ -1,10 +1,15 @@
-# SM Mapchooser SurfTimer Edit
+# SurfTimer - Map Chooser, Nominations, and RTV
 
-## About
+## Introduction
 
-This is an edit of the default SourceMod mapchooser and nomination plugin, it provides functionality for Fluffys SurfTimer or it's forks to display extra information of maps in the nominate and voting menus.
+This is an edit of the default SourceMod mapchooser, nominations, and rtv plugins. It provides functionality for SurfTimer or its forks to display relevant information and provide further functionality in the map voting and nomination processes.
 
-**This is a fork that's being tweaked to suit my personal needs for my servers, such as whitelisting maps using the mapcycle.txt file. Feel free to use it, but just remember this is mostly suited for me!**
+**This is a fork that is being tweaked to suit my personal needs for my servers, such as whitelisting maps using the mapcycle.txt file. Feel free to use it, and feel free to report things that may be broken, but just note that I may not always be available to fix everything!** Pull requests are encouraged, feel absolutely free to contribute. 😄
+
+## List of Things I've Added
+
+* These plugins will only list maps specified in `mapcycle.txt`. In contrast to its parent repositories, which do not refer to `mapcycle.txt`, this allows us to have further control over what maps you want hosted instead of having every single map in the `ck_maptier` database table listed automatically.
+* Added an option to `/nominate` that allows players to nominate a map from a list of maps that they have not completed. Works for styles too!
 
 ## Requirements
 
@@ -15,7 +20,7 @@ This is an edit of the default SourceMod mapchooser and nomination plugin, it pr
 **Compilation Requirements (Includes):**
 
 * [Sourcemod](https://www.sourcemod.net/downloads.php?branch=stable)
-* [Surftimer](https://github.com/surftimer/Surftimer-olokos/tree/master/addons/sourcemod/scripting/include)
+* [Surftimer](https://github.com/surftimer/Surftimer-Official/tree/master/addons/sourcemod/scripting/include)
 * [AutoExecConfig](https://github.com/Impact123/AutoExecConfig)
 * [ColorLib](https://github.com/c0rp3n/colorlib-sm)
 
