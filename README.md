@@ -26,7 +26,7 @@ This is an edit of the default SourceMod mapchooser, nominations, and rtv plugin
 
 ## Installation
 
-* Clone this repository and compile the script files located in `addons/sourcemod/scripting`.
-* Copy files over to your server's `csgo/addons/sourcemod/plugins`
-* Set `sm_server_tier` in `csgo/cfg/sourcemod/mapchooser.cfg` to the tier of maps you want appearing the nominate list. Example, for a tier 1-3 server, set it to `sm_server_tier 1.3`, a tier 1 only server would be `sm_server_tier 1.0` and if you want all tiers `sm_server_tier 0`
-* Make sure the maps you want available on the server are listed in `csgo/mapcycle.txt`.
+* Download the [latest release](https://github.com/1zc/Surftimer-Mapchooser/releases). (It will be a ZIP file named after the release version)
+* Extract the release ZIP file to your server's `csgo` folder, and start your server to generate the required config files.
+* Set `sm_server_tier` in `csgo/cfg/sourcemod/st-mapchooser.cfg` to the tier of maps you want appearing the nominate list. Example, for a tier 1-3 server, set it to `sm_server_tier 1.3`, a tier 1 only server would be `sm_server_tier 1.0` and if you want all tiers `sm_server_tier 0`
+* Make sure the maps you want available on the server are listed in `csgo/mapcycle.txt`!
