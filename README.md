@@ -11,6 +11,12 @@ This is an edit of the default SourceMod mapchooser, nominations, and rtv plugin
 * These plugins will only list maps specified in `mapcycle.txt`. In contrast to its parent repositories, which do not refer to `mapcycle.txt`, this allows us to have further control over what maps you want hosted instead of having every single map in the `ck_maptier` database table listed automatically.
 * Added an option to `/nominate` that allows players to nominate a map from a list of maps that they have not completed. Works for styles too!
 
+## Previews:
+
+Preview of Nomination Menu:
+
+![Preview of Nomination Menu](https://i.rebooti.ng/f/zjybx.png)
+
 ## Requirements
 
 * Sourcemod 1.8+
