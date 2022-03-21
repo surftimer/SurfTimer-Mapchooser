@@ -489,6 +489,7 @@ void SQL_SelectIncompleteMapListCallback(Handle owner, Handle hndl, const char[]
 			}
 		}
 
+		delete excludeMaps;
 		incompleteMapMenu.ExitBackButton = true;
 		incompleteMapMenu.Display(client, MENU_TIME_FOREVER);
 	}
