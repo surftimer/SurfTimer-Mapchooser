@@ -43,7 +43,7 @@ public Plugin myinfo =
 	name = "SurfTimer Nominations",
 	author = "AlliedModders LLC & SurfTimer Contributors",
 	description = "Provides Map Nominations",
-	version = "2.0.0",
+	version = "2.0.1",
 	url = "https://github.com/1zc/surftimer-mapchooser"
 };
 
@@ -101,10 +101,10 @@ public void OnPluginStart()
 	db_setupDatabase();
 	
 	int arraySize = ByteCountToCells(PLATFORM_MAX_PATH);
-	g_MapList = new ArrayList(arraySize);
+	g_MapList = CreateArray(arraySize);
 	g_MapListTier = new ArrayList(arraySize);
 	g_MapListWhiteList = new ArrayList(arraySize);
-	g_MapTierInt = new ArrayList(arraySize);
+	g_MapTierInt = new ArrayList();
 	g_aTierMenus = new ArrayList(arraySize);
 
 	AutoExecConfig_SetCreateDirectory(true);
@@ -357,7 +357,7 @@ void AttemptNominate(int client)
 
 void IncompleteNominate_SelectStyle(int client)
 {
-	Menu styleSelect = CreateMenu(IncompleteNominate_SelectStyleHandler);
+	Menu styleSelect = new Menu(IncompleteNominate_SelectStyleHandler);
 	SetMenuTitle(styleSelect, "Select Style - Incomplete Maps");
 	AddMenuItem(styleSelect, "0", "Normal");
 	AddMenuItem(styleSelect, "1", "Sideways");
@@ -368,15 +368,15 @@ void IncompleteNominate_SelectStyle(int client)
 	AddMenuItem(styleSelect, "6", "Fast Forward");
 
 	SetMenuOptionFlags(styleSelect, MENUFLAG_BUTTON_EXIT);
-	DisplayMenu(styleSelect, client, MENU_TIME_FOREVER);
+	styleSelect.Display(client, MENU_TIME_FOREVER);
 }
 
-public int IncompleteNominate_SelectStyleHandler(Menu styleSelect, MenuAction action, int param1, int param2)
+public int IncompleteNominate_SelectStyleHandler(Menu menu, MenuAction action, int param1, int param2)
 {
 	if (action == MenuAction_Select)
 	{
 		char info[32];
-		GetMenuItem(styleSelect, param2, info, sizeof(info));
+		GetMenuItem(menu, param2, info, sizeof(info));
 
 		if (StrContains(info, "0", false)!= -1) // Normal
 		{
@@ -414,9 +414,9 @@ public int IncompleteNominate_SelectStyleHandler(Menu styleSelect, MenuAction ac
 		}
 	}
 
-	else
+	else if (action == MenuAction_End)
 	{
-		CloseHandle(styleSelect);
+		delete menu;
 	}
 }
 
@@ -780,10 +780,9 @@ public void SelectMapListCallback(Handle owner, Handle hndl, const char[] error,
 // COPY PASTA TIME! https://github.com/Sneaks-Community/sourcemod-mapchooser-extended/
 void BuildTierMenus()
 {
-	// InitTierMenus
 	g_aTierMenus.Clear();
 
-	for(int i = g_TierMin; i <= g_TierMax; i++)
+	for (int i = g_TierMin; i <= g_TierMax; i++)
 	{
 		Menu TierMenu = new Menu(Handler_MapSelectMenu, MENU_ACTIONS_DEFAULT|MenuAction_DrawItem|MenuAction_DisplayItem);
 		TierMenu.SetTitle("%t", "Nominate Tier Title", i);
@@ -793,14 +792,12 @@ void BuildTierMenus()
 	}
 
 	char map[PLATFORM_MAX_PATH];
-	for (int i = 0; i < g_MapList.Length; i++)
+	for (int i = 0; i < GetArraySize(g_MapList); i++)
 	{
-		
-		g_MapList.GetString(i, map, sizeof(map));
+		GetArrayString(g_MapList, i, map, sizeof(map));
 		int tier = g_MapTierInt.Get(i);
 
 		Format(map, sizeof(map), "%s.", map);
-		
 		FindMap(map, map, sizeof(map));
 		
 		char displayName[PLATFORM_MAX_PATH];
