@@ -34,7 +34,7 @@ public Plugin myinfo =
 	name = "SurfTimer Vote Extend",
 	author = "SurfTimer Contributors",
 	description = "Allows players to vote extend map timelimit",
-	version = "1.8.3",
+	version = "2.0.1",
 	url = "https://github.com/1zc/surftimer-mapchooser"
 };
 
