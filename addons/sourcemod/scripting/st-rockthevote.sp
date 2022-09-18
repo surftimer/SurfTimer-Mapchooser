@@ -196,6 +196,7 @@ public void OnClientDisconnect(int client)
 	if (g_Voted[client])
 	{
 		g_Voted[client] = false;
+		g_Votes--;
     }
 	
 	if (IsFakeClient(client))
