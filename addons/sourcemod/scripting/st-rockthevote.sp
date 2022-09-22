@@ -272,7 +272,7 @@ void AttemptRTV(int client)
 		return;
 	}
 	
-	if (GetClientCount(true) < g_Cvar_MinPlayers.IntValue)
+	if (GetRealClientCount() < g_Cvar_MinPlayers.IntValue)
 	{
 		CReplyToCommand(client, "%t", "Minimal Players Not Met", g_szChatPrefix);
 		return;			
@@ -307,6 +307,21 @@ void AttemptRTV(int client)
 	{
 		StartRTV();
 	}	
+}
+
+int GetRealClientCount()
+{
+	int iClients = 0;
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && !IsFakeClient(i) && !IsClientSourceTV(i) && !IsClientObserver(i))
+		{
+			iClients++;
+		}
+	}
+
+	return iClients;
 }
 
 public Action Timer_DelayRTV(Handle timer)
