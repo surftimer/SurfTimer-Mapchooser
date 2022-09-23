@@ -59,6 +59,7 @@ ConVar g_Cvar_PointsRequirement;
 ConVar g_Cvar_RankRequirement;
 ConVar g_Cvar_VIPOverwriteRequirements;
 ConVar g_PlayerOne;
+ConVar g_Cvar_ExcludeSpectators;
 
 // Chat prefix
 char g_szChatPrefix[256];
@@ -98,6 +99,7 @@ public void OnPluginStart()
 	g_Cvar_RankRequirement = AutoExecConfig_CreateConVar("sm_rtv_rank_requirement", "0", "Rank required to use the rtv command, 0 to disable");
 	g_Cvar_VIPOverwriteRequirements = AutoExecConfig_CreateConVar("sm_rtv_vipoverwrite", "0", "1 - VIP's bypass Rank and/or Points requirement, 0 - VIP's need to meet the Rank and/or Points requirement", _, true, 0.0, true, 1.0);
 	g_PlayerOne = AutoExecConfig_CreateConVar("sm_rtv_oneplayer", "1", "If there is  only one player in the server allow him to rtv 1-allow 0-no", _, true, 0.0, true, 1.0);
+	g_Cvar_ExcludeSpectators = AutoExecConfig_CreateConVar("sm_rtv_exclude_spectators", "1", "Exclude spectators (incl. SourceTV/GOTV) from players count?", _, true, 0.0, true, 1.0);
 
 	RegConsoleCmd("sm_rtv", Command_RTV);
 	
@@ -272,7 +274,18 @@ void AttemptRTV(int client)
 		return;
 	}
 	
-	if (GetClientCount(true) < g_Cvar_MinPlayers.IntValue)
+	int iPlayers = 0;
+	
+	if (g_Cvar_ExcludeSpectators.BoolValue)
+	{
+		iPlayers = GetRealClientCount();
+	}
+	else
+	{
+		iPlayers = GetClientCount(true);
+	}
+	
+	if (iPlayers > 0 && iPlayers < g_Cvar_MinPlayers.IntValue)
 	{
 		CReplyToCommand(client, "%t", "Minimal Players Not Met", g_szChatPrefix);
 		return;			
@@ -307,6 +320,21 @@ void AttemptRTV(int client)
 	{
 		StartRTV();
 	}	
+}
+
+int GetRealClientCount()
+{
+	int iClients = 0;
+
+	for (int i = 1; i <= MaxClients; i++)
+	{
+		if (IsClientInGame(i) && !IsFakeClient(i) && !IsClientSourceTV(i) && !IsClientObserver(i))
+		{
+			iClients++;
+		}
+	}
+
+	return iClients;
 }
 
 public Action Timer_DelayRTV(Handle timer)
