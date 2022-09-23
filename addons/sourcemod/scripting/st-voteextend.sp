@@ -9,6 +9,7 @@
 #include <surftimer>
 #include <autoexecconfig>
 #include <colorlib>
+#include <sdktools>
 
 #pragma newdecls required
 #pragma semicolon 1
@@ -191,6 +192,7 @@ public void H_VoteExtendCallback(Menu menu, int num_votes, int num_clients, cons
 		ExtendMapTimeLimit(RoundToFloor(GetConVarFloat(g_hVoteExtendTime)*60));
 		g_bVEAllowed = false;
 		CreateTimer(g_fInterval.FloatValue, Timer_Delay, _, TIMER_FLAG_NO_MAPCHANGE);
+		GameRules_SetProp("m_iRoundTime", GameRules_GetProp("m_iRoundTime", 4, 0) + RoundToFloor(GetConVarFloat(g_hVoteExtendTime)*60), 4, 0, true);
 	} 
 	else
 	{
