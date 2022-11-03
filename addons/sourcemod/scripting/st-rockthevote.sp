@@ -340,6 +340,7 @@ int GetRealClientCount()
 public Action Timer_DelayRTV(Handle timer)
 {
 	g_RTVAllowed = true;
+	return Plugin_Stop;
 }
 
 void StartRTV()

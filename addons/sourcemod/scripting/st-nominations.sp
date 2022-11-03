@@ -418,6 +418,8 @@ public int IncompleteNominate_SelectStyleHandler(Menu menu, MenuAction action, i
 	{
 		delete menu;
 	}
+
+	return 0;
 }
 
 void AttemptIncompleteNominate(int client, int style)
@@ -857,6 +859,8 @@ public int TiersMenuHandler(Menu menu, MenuAction action, int client, int param2
 			DisplayMenu(g_aTierMenus.Get(StringToInt(option)-g_TierMin), client, MENU_TIME_FOREVER);
 		}
 	}
+
+	return 0;
 }
 
 public void RemoveMapPath(const char[] map, char[] destination, any maxlen)

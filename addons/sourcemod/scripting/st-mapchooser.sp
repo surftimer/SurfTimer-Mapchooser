@@ -1218,6 +1218,8 @@ public int Native_InitiateVote(Handle plugin, int numParams)
 	
 	LogAction(-1, -1, "Starting map vote because outside request");
 	InitiateVote(when, inputarray);
+
+	return 0;
 }
 
 /* native bool CanMapChooserStartVote(); */
@@ -1245,8 +1247,9 @@ public int Native_GetExcludeMapList(Handle plugin, int numParams)
 	
 	if (array == null)
 	{
-		return;	
+		return 0;	
 	}
+
 	int size = g_OldMapList.Length;
 	char map[PLATFORM_MAX_PATH];
 	
@@ -1256,7 +1259,7 @@ public int Native_GetExcludeMapList(Handle plugin, int numParams)
 		array.PushString(map);	
 	}
 	
-	return;
+	return 0;
 }
 
 /* native void GetNominatedMapList(ArrayList maparray, ArrayList ownerarray = null); */
@@ -1266,7 +1269,7 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 	ArrayList ownerarray = view_as<ArrayList>(GetNativeCell(2));
 	
 	if (maparray == null)
-		return;
+		return 0;
 
 	char map[PLATFORM_MAX_PATH];
 
@@ -1283,7 +1286,7 @@ public int Native_GetNominatedMapList(Handle plugin, int numParams)
 		}
 	}
 
-	return;
+	return 0;
 }
 
 public void db_setupDatabase()
@@ -1435,7 +1438,8 @@ public bool DisplayVoteToPros(int time, int flags, Menu menu)
 			players[total++] = i;
 		}
 	}
-	menu.DisplayVote(players, total, time, flags);
+
+	return menu.DisplayVote(players, total, time, flags);
 }
 
 stock bool VIPBypass(int client)
