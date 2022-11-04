@@ -15,13 +15,13 @@ Preview of Nomination Menu:
 ## Requirements
 
 * [SurfTimer](https://github.com/surftimer/Surftimer-Official)
-* Sourcemod 1.10 (Please use the latest stable version!)
+* Sourcemod 1.11 (Please use the latest stable version!)
 * A MySQL Database (Supported: MySQL 5.7, MySQL 8+, MariaDB)
 
 **Compilation Requirements (Includes):**
 
 * [SurfTimer](https://github.com/surftimer/Surftimer-Official/tree/master/addons/sourcemod/scripting/include)
-* [Sourcemod 1.10](https://www.sourcemod.net/downloads.php?branch=stable)
+* [Sourcemod 1.11](https://www.sourcemod.net/downloads.php?branch=stable)
 * [AutoExecConfig](https://github.com/Impact123/AutoExecConfig)
 * [ColorLib](https://github.com/c0rp3n/colorlib-sm)
 
