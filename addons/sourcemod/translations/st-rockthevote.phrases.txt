@@ -44,7 +44,7 @@
 
 	"Point Requirement"
 	{
-		"#format"		"{1:s}"
-		"en"			"{1} {red}You do not meet the point requirement!"
+		"#format"		"{1:s},{2:d}"
+		"en"			"{1} {red}You do not meet the point requirement! (Required points: {2})"
 	}
 }
