@@ -299,7 +299,7 @@ void AttemptRTV(int client)
 
 	if (GetConVarInt(g_Cvar_PointsRequirement) > 0 && !g_PointsREQ[client])
 	{
-		CPrintToChat(client, "%t", "Point Requirement", g_szChatPrefix);
+		CPrintToChat(client, "%t", "Point Requirement", g_szChatPrefix, GetConVarInt(g_Cvar_PointsRequirement));
 		return;
 	}
 	if (GetConVarInt(g_Cvar_RankRequirement) > 0 && !g_RankREQ[client])
